@@ -1,0 +1,230 @@
+/*
+body {
+    position:fixed !important;
+    position:absolute;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+}
+*/
+/* line 16, treelike.scss */
+#footer {
+  position: absolute;
+  bottom: 0px;
+  width: 100%; }
+
+/* line 21, treelike.scss */
+div#viz {
+  position: relative;
+  width: 100%;
+  margin: 4px;
+  /*
+  ul.nav li.dropdown:hover ul.dropdown-menu{
+      display: block;    
+  }
+  */ }
+  /* line 31, treelike.scss */
+  div#viz ul.nav-tabs > li {
+    text-align: center; }
+  /* line 34, treelike.scss */
+  div#viz li.label:hover {
+    color: #333;
+    background-color: #EEE; }
+  /* line 38, treelike.scss */
+  div#viz li.label.from {
+    background-color: #996666 !important; }
+  /* line 41, treelike.scss */
+  div#viz li.label.to {
+    background-color: #4444ff !important; }
+  /* line 44, treelike.scss */
+  div#viz .tab-content {
+    max-height: 200px;
+    overflow: auto; }
+    /* line 45, treelike.scss */
+    div#viz .tab-content ul.inline > li {
+      font-size: 80%;
+      margin: 0px 1px 0px 2px; }
+  /* line 53, treelike.scss */
+  div#viz > div.tree {
+    position: absolute;
+    left: 0px;
+    width: 800px; }
+  /* line 58, treelike.scss */
+  div#viz > div.version-compare {
+    position: absolute;
+    right: 0px;
+    width: 400px; }
+  /* line 63, treelike.scss */
+  div#viz div.treemap-div {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    display: none;
+    overflow: auto; }
+  /* line 70, treelike.scss */
+  div#viz div.treemap-div div.treemap-list-div {
+    overflow: auto;
+    border: 3px ridge green;
+    border-radius: 5px;
+    padding: 4px; }
+  /* line 78, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc {
+    margin: 0px;
+    padding: 3px; }
+  /* line 82, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc li {
+    display: inline; }
+  /* line 85, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc li::before {
+    content: "\2192";
+    color: #700; }
+  /* line 90, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc li:first-child::before {
+    content: " "; }
+  /* line 93, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc li.shown {
+    font-weight: bold; }
+  /* line 96, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc li.unshown {
+    opacity: 0.7;
+    cursor: pointer; }
+  /* line 100, treelike.scss */
+  div#viz div.treemap-div ul.treemap-desc li.highlight {
+    font-weight: bold;
+    font-size: 130%; }
+  /* line 104, treelike.scss */
+  div#viz div.choose-version span.version {
+    margin: 14px; }
+  /* line 107, treelike.scss */
+  div#viz div.choose-version span.version.notloaded {
+    opacity: 0.5; }
+  /* line 110, treelike.scss */
+  div#viz div.choose-version span.version.loaded {
+    opacity: 1;
+    font-weight: bold; }
+  /* line 114, treelike.scss */
+  div#viz div.strip {
+    clear: both; }
+  /* line 117, treelike.scss */
+  div#viz div.strip > svg {
+    float: left; }
+  /* line 120, treelike.scss */
+  div#viz div.strip > div.legend {
+    float: left;
+    /*
+    -webkit-column-width: 10em;
+    -moz-column-width: 10em;
+    border: 2px solid blue;
+    -webkit-column-rule: 2px solid blue;
+    -moz-column-rule: 2px solid blue;
+    */
+    /* make scrollbar visible on chrome */
+    overflow-y: auto;
+    border: 1px solid black;
+    line-height: 1em; }
+  /* line 134, treelike.scss */
+  div#viz div.strip > div.legend::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px; }
+  /* line 139, treelike.scss */
+  div#viz div.strip > div.legend::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 2px solid white;
+    /* should match background, can't be transparent */
+    background-color: rgba(0, 0, 0, 0.5); }
+  /* line 146, treelike.scss */
+  div#viz div.strip > svg > g > rect,
+  div#viz div.strip > svg > g > path, div#viz > div.dim-legend > div > div.label-container > div.dim-legend-label {
+    opacity: 0.2; }
+  /* line 150, treelike.scss */
+  div#viz > div.dim-legend > div > div.label-container > div.dim-legend-label.to-version, div#viz > div.dim-legend .to-version {
+    opacity: 1;
+    border: 1px solid #4444ff;
+    stroke: #4444ff;
+    stroke-width: 2px; }
+  /* line 157, treelike.scss */
+  div#viz > div.dim-legend > div > div.label-container > div.dim-legend-label.from-version, div#viz > div.dim-legend .from-version {
+    opacity: 1;
+    border: 1px solid #996666;
+    stroke: #996666;
+    stroke-width: 2px; }
+  /* line 164, treelike.scss */
+  div#viz > div.dim-legend > div > div.label-container > div.dim-legend-label.both-version, div#viz > div.dim-legend .both-version {
+    opacity: 1;
+    border: 0px;
+    stroke-width: 0px; }
+  /* line 170, treelike.scss */
+  div#viz > div.dim-legend > div > div.label-container > div.dim-legend-label.none-version, div#viz > div.dim-legend .none-version {
+    opacity: 0.2;
+    border: 0px;
+    stroke-width: 0px; }
+  /* line 175, treelike.scss */
+  div#viz path.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1.5px; }
+    /* line 179, treelike.scss */
+    div#viz path.link.from-version {
+      stroke: #996666; }
+    /* line 182, treelike.scss */
+    div#viz path.link.to-version {
+      stroke: #4444ff; }
+  /* line 188, treelike.scss */
+  div#viz div.strip > svg > g > rect.highlighted,
+  div#viz div.strip > svg > g > path.highlighted, div#viz > div.dim-legend > div > div.label-container > div.dim-legend-label.highlighted {
+    opacity: 1; }
+  /* line 191, treelike.scss */
+  div#viz > div.dim-list {
+    text-align: left;
+    padding-left: 5px; }
+  /* line 195, treelike.scss */
+  div#viz > div.dim-list > label {
+    font-weight: bold;
+    padding: 3px 8px 4px 5px; }
+  /* line 199, treelike.scss */
+  div#viz > div.dim-list > label input {
+    padding-left: 5px;
+    vertical-align: bottom; }
+
+/* line 204, treelike.scss */
+.clear {
+  clear: both; }
+
+/* line 207, treelike.scss */
+.group:after {
+  content: "";
+  display: table;
+  clear: both; }
+
+/* line 212, treelike.scss */
+div.pie {
+  float: left;
+  text-align: center;
+  border-radius: 5px; }
+
+/* line 217, treelike.scss */
+.dimension-dragger {
+  background: orange;
+  font-weight: bold;
+  width: 100%;
+  height: 100%; }
+
+/* line 223, treelike.scss */
+.dimension-receptacle {
+  min-width: 40px;
+  min-height: 20px;
+  border: 2px dashed purple;
+  text-align: center; }
+
+/* line 230, treelike.scss */
+.node circle {
+  cursor: pointer;
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 1.5px; }
+
+/* line 237, treelike.scss */
+.node text {
+  font-size: 11px; }

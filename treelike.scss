@@ -1,0 +1,240 @@
+
+
+$from-color: #966;
+$to-color: #44F;
+$tab-max-height: 200px;
+/*
+body {
+    position:fixed !important;
+    position:absolute;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+}
+*/
+#footer {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+}
+div#viz {
+    position: relative;
+    width: 100%;
+    margin: 4px;
+
+    /*
+    ul.nav li.dropdown:hover ul.dropdown-menu{
+        display: block;    
+    }
+    */
+    ul.nav-tabs>li {
+        text-align: center;
+    }
+    li.label:hover {
+        color: #333;
+        background-color: #EEE;
+    }
+    li.label.from {
+        background-color: $from-color !important;
+    }
+    li.label.to {
+        background-color: $to-color !important;
+    }
+    .tab-content {
+        ul.inline > li {
+            font-size: 80%;
+            margin: 0px 1px 0px 2px;
+        }
+        max-height: $tab-max-height;
+        overflow: auto;
+    }
+
+    &>div.tree {
+        position: absolute;
+        left: 0px;
+        width: 800px;
+    }
+    &>div.version-compare {
+        position: absolute;
+        right: 0px;
+        width: 400px;
+    }
+    div.treemap-div {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        display: none;
+        overflow:auto;
+    }
+    div.treemap-div div.treemap-list-div {
+        overflow: auto;
+        border: 3px ridge green;
+        border-radius: 5px;
+        padding: 4px;
+    }
+    div.treemap-div div.treemap-svg {
+    }
+    div.treemap-div ul.treemap-desc {
+        margin: 0px;
+        padding: 3px;
+    }
+    div.treemap-div ul.treemap-desc li {
+        display: inline;
+    }
+    div.treemap-div ul.treemap-desc li::before {
+        content: "\2192";
+        color: #700;
+    }
+
+    div.treemap-div ul.treemap-desc li:first-child::before {
+        content: " ";
+    }
+    div.treemap-div ul.treemap-desc li.shown {
+        font-weight: bold;
+    }
+    div.treemap-div ul.treemap-desc li.unshown {
+        opacity: 0.7;
+        cursor: pointer;
+    }
+    div.treemap-div ul.treemap-desc li.highlight {
+        font-weight: bold;
+        font-size: 130%;
+    }
+    div.choose-version span.version {
+        margin: 14px;
+    }
+    div.choose-version span.version.notloaded {
+        opacity: 0.5;
+    }
+    div.choose-version span.version.loaded {
+        opacity: 1;
+        font-weight: bold;
+    }
+    div.strip {
+        clear:both;
+    }
+    div.strip>svg {
+        float:left;
+    }
+    div.strip>div.legend {
+        float:left;
+        /*
+        -webkit-column-width: 10em;
+        -moz-column-width: 10em;
+        border: 2px solid blue;
+        -webkit-column-rule: 2px solid blue;
+        -moz-column-rule: 2px solid blue;
+        */
+        /* make scrollbar visible on chrome */
+        overflow-y: auto;
+        border: 1px solid black;
+        line-height: 1em;
+    }
+    div.strip>div.legend::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 11px;
+        height: 11px;
+    }
+    div.strip>div.legend::-webkit-scrollbar-thumb {
+        border-radius: 8px;
+        border: 2px solid white; /* should match background, can't be transparent */
+        background-color: rgba(0, 0, 0, .5);
+    }
+    div.strip>svg>g>rect,
+    div.strip>svg>g>path,
+    &>div.dim-legend>div>div.label-container>div.dim-legend-label {
+        opacity: 0.2;
+    }
+    &>div.dim-legend>div>div.label-container>div.dim-legend-label.to-version,
+    &>div.dim-legend .to-version {
+        opacity:1;
+        border: 1px solid $to-color;
+        stroke: $to-color;
+        stroke-width: 2px;
+    }
+    &>div.dim-legend>div>div.label-container>div.dim-legend-label.from-version,
+    &>div.dim-legend .from-version {
+        opacity:1;
+        border: 1px solid $from-color;
+        stroke: $from-color;
+        stroke-width: 2px;
+    }
+    &>div.dim-legend>div>div.label-container>div.dim-legend-label.both-version,
+    &>div.dim-legend .both-version {
+        opacity:1;
+        border: 0px;
+        stroke-width: 0px;
+    }
+    &>div.dim-legend>div>div.label-container>div.dim-legend-label.none-version,
+    &>div.dim-legend .none-version {
+        opacity:0.2;
+        border: 0px;
+        stroke-width: 0px;
+    }
+    path.link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 1.5px;
+        &.from-version {
+            stroke: $from-color;
+        }
+        &.to-version {
+            stroke: $to-color;
+        }
+    }
+    div.strip>svg>g>rect.highlighted,
+    div.strip>svg>g>path.highlighted,
+    &>div.dim-legend>div>div.label-container>div.dim-legend-label.highlighted {
+        opacity: 1;
+    }
+    &>div.dim-list {
+        text-align: left;
+        padding-left: 5px;
+    }
+    &>div.dim-list>label {
+        font-weight: bold;
+        padding: 3px 8px 4px 5px;
+    }
+    &>div.dim-list>label input {
+        padding-left: 5px;
+        vertical-align: bottom;
+    }
+}
+.clear {
+    clear: both;
+}
+.group:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+div.pie {
+    float: left;
+    text-align: center;
+    border-radius: 5px;
+}
+.dimension-dragger {
+    background: orange;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+}
+.dimension-receptacle {
+    min-width: 40px;
+    min-height: 20px;
+    border: 2px dashed purple;
+    text-align: center;
+}
+
+.node circle {
+    cursor: pointer;
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+.node text {
+    font-size: 11px;
+}
+

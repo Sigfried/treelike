@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    
+    <!-- l ink type="text/css" rel="stylesheet" href="style.css"/ -->
+    <script type="text/javascript" src="./lib/jquery-1.9.1.js"></script>
+    <!-- s cript type="text/javascript" src="./jquery/jquery-ui.js"></script -->
+    <script type="text/javascript" src="./lib/d3.js"></script>
+    <script type="text/javascript" src="./lib/underscore.js"></script>
+    <!--s cript type="text/javascript" src="../activedata/ActiveData.js"></script-->
+    <script type="text/javascript" src="../enlightened-data/enlightened-data.js"></script>
+    <script type="text/javascript" src="./lib/jquery.csv.js"></script>
+    <script type="text/javascript" src="./lib/lz-string-reference.js"></script>
+    <script type="text/javascript" src="./treelike.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css"/>
+    <link type="text/css" rel="stylesheet" href="./treelike.css"/>
+    <script type="text/javascript" src="./lib/bootstrap/js/bootstrap.js"></script>
+  </head>
+  <body>
+        <div id="viz" class="viz group container-fluid">
+            <div id=inputs class="row-fluid">
+                <div class="span2">
+                    <h3>Tree-like</h3>
+                    <input type=file id=files name=files[] multiple />
+                    <a id="save-dataset">Save dataset</a>
+                    <a id="restore-dataset">Restore dataset</a>
+                </div>
+                <div class="span10" id="file-list"></div>
+            </div>
+            <div class="row-fluid">
+                <div class="unused-dims span7 dim-container">
+                    <ul class="nav nav-tabs"></ul>
+                    <div class="tab-content span12"></div>
+                </div>
+                <div class="search-box span3">
+                    <form>
+                        <input type="text" size="30"/> 
+                        <input type="submit" value="Search" onclick="return false"/>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="displayed-dims span12 dim-container">
+                    <ul class="nav nav-tabs"></ul>
+                    <div class="tab-content span12"></div>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <div class="tree span8"></div>
+                <div class="legend span4"></div>
+            </div>
+        </div>
+    <script type="text/javascript">
+        var gbo = {};  // GLOBAL DATA OBJECT
+        $(function() {
+            $('#restore-dataset').on('click', function() {
+                var dataSet = JSON.parse(LZString.decompress(
+                        localStorage.getItem('dataSet')));
+                whenLoaded(dataSet);
+            })
+
+            $(document).ready(function() {
+                if(isAPIAvailable()) {
+                $('#files').bind('change', handleFileSelect);
+                }
+            });
+
+            function isAPIAvailable() {
+                // Check for the various File API support.
+                if (window.File && window.FileReader && window.FileList && window.Blob) {
+                // Great success! All the File APIs are supported.
+                return true;
+                } else {
+                // source: File API availability - http://caniuse.com/#feat=fileapi
+                // source: <output> availability - http://html5doctor.com/the-output-element/
+                document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+                // 6.0 File API & 13.0 <output>
+                document.writeln(' - Google Chrome: 13.0 or later<br />');
+                // 3.6 File API & 6.0 <output>
+                document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+                // 10.0 File API & 10.0 <output>
+                document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+                // ? File API & 5.1 <output>
+                document.writeln(' - Safari: Not supported<br />');
+                // ? File API & 9.2 <output>
+                document.writeln(' - Opera: Not supported');
+                return false;
+                }
+            }
+
+            function handleFileSelect(evt) {
+                var files = evt.target.files; // FileList object
+                _(files).each(function(file) {
+                    file.basename = file.name.replace(/\.[^\.]+$/, '');
+                    gbo[file.basename] = new treelike.DataSet(
+                        { file: file, loaded: false });
+                    var reader = new FileReader();
+                    reader.readAsText(file);
+                    reader.onload = function(event){
+                        var csv = event.target.result;
+                        var dataSet = gbo[file.basename];
+                        //dataSet.raw = csv;  // too big, don't hold on to
+                        dataSet.loaded = true;
+                        var data;
+                        if (csv.slice(0,1) === '{' || csv.slice(0,1) === '[') {
+                            data = JSON.parse(csv);
+                        } else if (csv.slice(0,4) === 'var ') {
+                            eval(csv);
+                            var varname = csv.slice(4,50)
+                                .match(/^([a-zA-Z_][a-zA-Z_0-9]*) ?=/)[1];
+                            data = eval(varname);
+                        } else {
+                            data = $.csv.toObjects(csv, {onParseValue:$.csv.hooks.castToScalar});
+                        }
+                        dataSet.setup(data);
+                        //dataSet.array = $.csv.toArrays(csv);
+
+                        var output = '<div class="span2">'
+                        output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
+                        output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
+                        output += file.size + '&nbsp;bytes';
+                        output += "<br/>\n";
+                        output += data.length + '&nbsp;rows';
+                        output += "<br/>\n";
+                        output += 'fields: ' + dataSet.allDims.join(', ');
+                        //(file.lastModifiedDate && ('(' + file.lastModifiedDate.toLocaleDateString() + ')'));
+                        output += '</div>';
+                        var blurb = $(output);
+                        $('#file-list').append(blurb);
+                        blurb.on('click', function() {
+                                whenLoaded(dataSet) });
+                    };
+                    reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
+                });
+                // post the results
+            }
+
+            function whenLoaded(dataSet) {
+                treelike.collapsibleTree.init(dataSet, 'div.tree');
+                var browserUI = treelike.browserUI.init(dataSet);
+                var dimControls = d3.select('div#viz>ul.dim-list').selectAll('li')
+                    .data(dataSet.dims.slice(0)).enter()
+                    .append('li')
+                        .attr('class','dropdown')
+                var buttons = dimControls
+                    .append('a')
+                        .attr('href', '#')
+                        .attr('class', 'dropdown-toggle')
+                        .attr('data-toggle','dropdown')
+                        .text(function(d) { return d + ' ' })
+                    .append('b')
+                        .attr('class','caret')
+                var uls = buttons
+                    .append('ul')
+                        .attr('class','dropdown-menu')
+
+                uls
+                    .append('li').append('a').text('Show');
+                uls
+                    .append('li').append('a').text('Merge');
+
+                $('#save-dataset').on('click', function() {
+                        localStorage.setItem('dataSet', 
+                            LZString.compress(JSON.stringify(dataSet)));
+                        alert('dataset stored')
+                })
+            }
+            //var treelike_inst = treelike.data.load(['myData'], whenLoaded, true);
+        });
+    </script>
+  </body>
+</html>
+
