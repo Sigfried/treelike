@@ -25,7 +25,7 @@
                     <h3>Tree-like</h3>
                     <input type=file id=files name=files[] multiple />
                     <a id="save-dataset">Save dataset</a>
-                    <a id="restore-dataset">Restore dataset</a>
+                    <a href="javascript:restoreData()">Restore dataset</a>
                 </div>
                 <div class="span10" id="file-list"></div>
             </div>
@@ -53,14 +53,19 @@
             </div>
         </div>
     <script type="text/javascript">
-        var gbo = {};  // GLOBAL DATA OBJECT
+        var gbo = {}, restoreData;  // GLOBAL DATA OBJECT
         $(function() {
-            $('#restore-dataset').on('click', function() {
+
+            restoreData = function() {
+                console.log($.eventReport());
                 var dataSet = JSON.parse(LZString.decompress(
                         localStorage.getItem('dataSet')));
-                whenLoaded(dataSet);
-            })
-
+                dataSet.__proto__ = treelike.DataSet.prototype;
+                treelike.collapsibleTree.init(dataSet, 'div.tree');
+                var browserUI = treelike.browserUI.init(dataSet);
+                console.log('loaded DataSet');
+                console.log($.eventReport());
+            };
             $(document).ready(function() {
                 if(isAPIAvailable()) {
                 $('#files').bind('change', handleFileSelect);
@@ -114,7 +119,7 @@
                         } else {
                             data = $.csv.toObjects(csv, {onParseValue:$.csv.hooks.castToScalar});
                         }
-                        dataSet.setup(data);
+                        dataSet.dataPrep(data);
                         //dataSet.array = $.csv.toArrays(csv);
 
                         var output = '<div class="span2">'
@@ -161,11 +166,38 @@
                 uls
                     .append('li').append('a').text('Merge');
 
-                $('#save-dataset').on('click', function() {
+                $('#save-dataset').on('click', function(e) {
+                        e.preventDefault();
                         localStorage.setItem('dataSet', 
                             LZString.compress(JSON.stringify(dataSet)));
                         alert('dataset stored')
                 })
+            }
+            $.eventReport = function(selector, root) {
+                var s = [];
+                $(selector || '*', root).addBack().each(function() {
+                    // the following line is the only change
+                    var e = $._data(this, 'events');
+                    if(!e) return;
+                    s.push(this.tagName);
+                    if(this.id) s.push('#', this.id);
+                    if(this.className) s.push('.', this.className.replace(/ +/g, '.'));
+                    for(var p in e) {
+                        var r = e[p],
+                            h = r.length - r.delegateCount;
+                        if(h)
+                            s.push('\n', h, ' ', p, ' handler', h > 1 ? 's' : '');
+                        if(r.delegateCount) {
+                            for(var q = 0; q < r.length; q++)
+                                if(r[q].selector) s.push('\n', p, ' for ', r[q].selector);
+                        }
+                    }
+                    s.push('\n\n');
+                });
+                return s.join('');
+            }
+            $.fn.eventReport = function(selector) {
+                return $.eventReport(selector, this);
             }
             //var treelike_inst = treelike.data.load(['myData'], whenLoaded, true);
         });

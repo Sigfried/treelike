@@ -7,7 +7,7 @@ var treelike = (function($) {
 treelike.DataSet = function(stuff) {
     _.extend(this, stuff);
 };
-treelike.DataSet.prototype.setup = function(data) {
+treelike.DataSet.prototype.dataPrep = function(data) {
     var that = this;
     this.dims = [];
     this.data = data;
