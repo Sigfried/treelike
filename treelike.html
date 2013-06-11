@@ -41,8 +41,9 @@
                     </form>
                 </div>
             </div>
-            <div class="row">
-                <div class="displayed-dims span12 dim-container">
+            <div class="row-fluid">
+                <div class="displayed-dims span12 dim-container"
+                    style="width:auto">
                     <ul class="nav nav-tabs"></ul>
                     <div class="tab-content span12"></div>
                 </div>
@@ -105,6 +106,7 @@
                     reader.readAsText(file);
                     reader.onload = function(event){
                         var csv = event.target.result;
+                        csv = csv.replace(/\r/g,'\n');  // does this fix a csv library bug?
                         var dataSet = gbo[file.basename];
                         //dataSet.raw = csv;  // too big, don't hold on to
                         dataSet.loaded = true;

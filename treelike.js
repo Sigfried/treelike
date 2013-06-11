@@ -12,12 +12,23 @@ treelike.DataSet.prototype.dataPrep = function(data) {
     this.dims = [];
     this.data = data;
     this.allDims = _(data[0]).keys();
+    this.allDims = _(this.allDims).map(function(d) {
+        if (d.match(/[^a-zA-Z_\-0-9]/)) {
+            var cleanId = d.replace(/[^a-zA-Z_\-0-9]/g, '');
+            _(that.data).each(function(row) {
+                row[cleanId] = row[d];
+                delete row[d];
+            });
+            return cleanId;
+        }
+        return d;
+    });
     this.dimGroups = _.chain(this.allDims).map(function(d) {
         return [d, _.chain(that.data).countBy(d).keys().value()];
     }).object().value();
     this.defaultWidths = _.chain(this.allDims).map(function(dim) {
-        return [dim, enlightenedData.aggregate(
-                _(that.dimGroups[dim]).pluck('length')).avg * 30]
+        return [dim, Math.max(25,enlightenedData.aggregate(
+                _(that.dimGroups[dim]).pluck('length')).avg * 15)]
     }).object().value();
     this.defaultWidths.Root = 80;
     this.dimWidths = _.clone(this.defaultWidths);
@@ -335,7 +346,7 @@ treelike.browserUI = (function() {
         }
         var from = enlightenedData.group(dataSet.data, d)[compareSettings.fromIdx];
         var to = enlightenedData.group(dataSet.data, d)[compareSettings.toIdx];
-        dataSet.rootVal = enlightenedData.diffGroup(from, to, d)[0];
+        dataSet.rootVal = enlightenedData.compareValue(from, to);
         treelike.collapsibleTree.root = dataSet.rootVal;
         treelike.collapsibleTree.update(treelike.collapsibleTree.root);
         bu.update();
