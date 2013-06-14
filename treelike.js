@@ -577,7 +577,7 @@ treelike.collapsibleTree = (function($, d3) {
             _(dimVals).each(function(list) {
                 var bar;
                 var width = scale(list.length);
-                if (cs.dim) {
+                if (cs.dim && d.in === "both") {
                     var fromRecs = _.chain(list)
                         .map(function(d) {return d.from}).filter(_.identity)
                         .pluck('records').pluck('length').value();
@@ -587,17 +587,9 @@ treelike.collapsibleTree = (function($, d3) {
                         .pluck('records').pluck('length').value();
                     var toCnt = enlightenedData.aggregate(toRecs).sum;
                     var fromProp = fromCnt / (fromCnt + toCnt);
-                    bar = $('<div></div>')
-                            .css('background-color', '#966')
-                            .css('display', 'inline-block')
-                            .width(width * fromProp)
-                            .height('1em')[0].outerHTML + 
-                        $('<div></div>')
-                            .css('background-color', '#44F')
-                            .css('display', 'inline-block')
-                            .width(width * (1-fromProp))
-                            .height('1em')[0].outerHTML + 
-                        ' ' + list.length 
+                    bar = makeBar(width * fromProp, '#966') +
+                          makeBar(width * (1 - fromProp), '#44F') +
+                          ' ' + list.length 
                         /*
                         + '(' +
                         $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
@@ -607,18 +599,22 @@ treelike.collapsibleTree = (function($, d3) {
                         ')'
                         */
                 } else {
-                    bar = $('<div></div>')
-                            .css('background-color', '#888')
-                            .css('display', 'inline-block')
-                            .width(width)
-                            .height('1em')[0].outerHTML + 
-                            ' ' + list.length;
+                    var color = cs.dim ? 
+                        ((d.in === 'from') ? '#966' : '#44F') : '#888';
+                    bar = makeBar(width, color) + ' ' + list.length;
                 }
                 facts[list.dim + ' values'] = bar;
             });
             dl.html( _.chain(facts).pairs().map(function(pair) {
                         return '<dt>' + pair[0] + '</dt><dd>' + pair[1] + '</dd>';
                     }).join('\n').value());
+        }
+        function makeBar(width, color) {
+            return $('<div></div>')
+                .css('background-color', color)
+                .css('display', 'inline-block')
+                .width(width)
+                .height('1em')[0].outerHTML;
         }
         function nodeHighlight(node) {
             if (_(node.__data__).has('mergeWith')) {
