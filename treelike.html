@@ -3,27 +3,34 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     
-    <!-- l ink type="text/css" rel="stylesheet" href="style.css"/ -->
+    <!--
+    <link type="text/css" rel="stylesheet" href="style.css"/>
     <script type="text/javascript" src="./lib/jquery-1.9.1.js"></script>
-    <!-- s cript type="text/javascript" src="./jquery/jquery-ui.js"></script -->
+    <script type="text/javascript" src="./jquery/jquery-ui.js"></script>
+    -->
     <script type="text/javascript" src="./lib/d3.js"></script>
     <script type="text/javascript" src="./lib/underscore.js"></script>
-    <!--s cript type="text/javascript" src="../activedata/ActiveData.js"></script-->
+
+    <link rel="stylesheet" type="text/css" href="./w2ui/css/w2ui-1.2.css" />
+    <script type="text/javascript" src="./w2ui/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./w2ui/js/w2ui-1.2.js"></script>
+
+
     <script type="text/javascript" src="enlightened-data.js"></script>
     <script type="text/javascript" src="./lib/jquery.csv.js"></script>
     <script type="text/javascript" src="./lib/lz-string-reference.js"></script>
     <script type="text/javascript" src="./treelike.js"></script>
 
-    <link type="text/css" rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css"/>
     <link type="text/css" rel="stylesheet" href="./treelike.css"/>
+    <link type="text/css" rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css"/>
     <script type="text/javascript" src="./lib/bootstrap/js/bootstrap.js"></script>
   </head>
-  <body>
-        <div id="viz" class="viz group container-fluid">
+  <body style="margin: 0px; padding: 0px; overflow: hidden">
+      <div id="viz" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px;">
             <div id=inputs class="row-fluid">
                 <div class="span2">
                     <h3>Tree-like</h3>
-                    <input type=file id=files name=files[] multiple />
+                    <input type=file id=fileChooser name=fileChooser[] />
                     <a id="save-dataset">Save dataset</a>
                     <a href="javascript:restoreData()">Restore dataset</a>
                 </div>
@@ -52,10 +59,40 @@
                 <div class="tree span8"></div>
                 <div class="legend span4"></div>
             </div>
-        </div>
+    </div>
     <script type="text/javascript">
         var gbo = {}, restoreData;  // GLOBAL DATA OBJECT
         $(function() {
+            $('#viz').height($(window).height() - 10);
+            var layout = $('#viz').w2layout({
+                name: 'main_layout',
+                panels: [
+                    { type: 'top', size: 160, content: $('#inputs')[0].innerHTML,
+                        style: 'border: 1px solid red', },
+                    { type: 'left', size: 150, resizable: true,
+                        style: 'border: 1px solid red', },
+                    { type: 'right', size: 150, resizable: true,
+                        style: 'border: 1px solid red', },
+                    { type: 'main', 
+                        style: 'border: 1px solid red', },
+                ]
+            });
+            function columnList(dataSet) {
+                var colGrid = $('<div id="columnGrid"></div>"').w2grid({
+                    name: 'colGrid',
+                    header: 'Columns in ' + dataSet.file.basename,
+                    columns: [
+                        { field: 'colname', caption: 'Col Name' }
+                        ],
+                    records: _(dataSet.allDims).map(function(d,i) { return {recid:i, colname:d}}),
+                    /*
+                    records: [ { recid: 1, colname: 'record 1' },
+                               { recid: 2, colname: 'record 2' },
+                                                     ],
+                    */
+                });
+                layout.content('left', colGrid);
+            }
 
             restoreData = function() {
                 console.log($.eventReport());
@@ -69,7 +106,7 @@
             };
             $(document).ready(function() {
                 if(isAPIAvailable()) {
-                $('#files').bind('change', handleFileSelect);
+                $('#fileChooser').bind('change', handleFileSelect);
                 }
             });
 
@@ -98,6 +135,9 @@
 
             function handleFileSelect(evt) {
                 var files = evt.target.files; // FileList object
+                if (files.length !== 1) {
+                    throw new Error("got weird number of files");
+                }
                 _(files).each(function(file) {
                     file.basename = file.name.replace(/\.[^\.]+$/, '');
                     gbo[file.basename] = new treelike.DataSet(
@@ -124,20 +164,7 @@
                         dataSet.dataPrep(data);
                         //dataSet.array = $.csv.toArrays(csv);
 
-                        var output = '<div class="span2">'
-                        output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
-                        output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
-                        output += file.size + '&nbsp;bytes';
-                        output += "<br/>\n";
-                        output += data.length + '&nbsp;rows';
-                        output += "<br/>\n";
-                        output += 'fields: ' + dataSet.allDims.join(', ');
-                        //(file.lastModifiedDate && ('(' + file.lastModifiedDate.toLocaleDateString() + ')'));
-                        output += '</div>';
-                        var blurb = $(output);
-                        $('#file-list').append(blurb);
-                        blurb.on('click', function() {
-                                whenLoaded(dataSet) });
+                        columnList(dataSet);  // whenLoaded(dataSet) should go here
                     };
                     reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
                 });
