@@ -185,7 +185,8 @@ treelike.browserUI = (function() {
             .attr('x', function(d,i) { return x(i) })
             .attr('y', function(d) { return height - y(d) })
             .attr('height', function(d) { return y(d) })
-            .attr('width', barWidth);
+            .attr('width', barWidth)
+            ;
     }
     function updateDims(selector, data, align) {
         var maxValueCount = _.chain(dataSet.dimGroups)
@@ -200,11 +201,19 @@ treelike.browserUI = (function() {
             .each(function(d) {
                 var vals = dataSet.dimGroups[d];
                 var span = d3.select(this);
-                span.text(vals.length + ' vals ');
+                span.text(vals.length + ' val' + 
+                    (vals.length === 1 ? '' : 's') + ' ');
                 sparkBars( span, 
                     _.chain(vals).pluck('records').pluck('length').value(),
                     100, 20, '#777');
-            });
+                span.on('mouseover', function(d) {
+                    treelike.tooltip.showTooltip(vals.rawValues());
+                });
+                span.on('mouseover', function(d) {
+                    treelike.tooltip.hideTooltip();
+                });
+            })
+
         return;
         var templ = _.template(
             '<li dim="<%=data.dim%>">' +
@@ -513,7 +522,7 @@ treelike.tooltip = (function(d3) {
     var $ = undefined;  // just to make sure I won't use jQuery here without intending to
     var tt = {}, initialized = false, viz, tooltip;
     function initialize() {
-        viz = d3.select('#viz');
+        viz = d3.select('body');
         tooltip = viz.append("div")
             .style("display", "none")
             //.style("background-color", "#DD8")
@@ -525,7 +534,7 @@ treelike.tooltip = (function(d3) {
     }
     tt.showTooltip = function(html) {
         if (!initialized) initialize();
-        var m = d3.mouse(viz.node());
+        var m = d3.mouse(d3.select('body').node());
         tooltip
             .style("display", null)
             .style("left", m[0] + 30 + "px")
