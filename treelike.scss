@@ -1,4 +1,55 @@
 
+// from  http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/]
+
+/* Generic pane rules */
+body { margin: 0; -webkit-text-size-adjust: 100%; }
+.gp-page { left: 0; right: 0; top: 0; bottom: 0; }
+.gp-row, .gp-col, .gp-page { overflow: hidden; position: absolute; }
+.gp-row { left: 0; right: 0; }
+.gp-col { top: 0; bottom: 0; }
+.gp-scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.gp-scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.gp-fill, .gp-pane { position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    width: 100%; height: 100% }
+.gp-pane { display: none; }
+
+    /* Workaround: in landscape mode, IEMobile makes bottom toolbar
+     * overlap the page, so shorten the page by 75px to compensate */
+.iemobile .gp-page { bottom: -6px; }
+@media screen and (orientation:landscape) { .iemobile .page { bottom:
+        75px; } }
+
+/* Very rough, 5-minute effort at iOS-like styles. I'm sure you can do better... */
+
+body { font-family: 'Helvetica Neue', Arial, Sans-Serif; }
+.gp-header, .gp-footer {
+    color: #eee; background: #696f77; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); padding: 0 0.5em;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#696f77), color-stop(100%,#28343b));
+    background: -webkit-linear-gradient(top, #696f77 0%,#28343b 100%); background: -ms-linear-gradient(top, #696f77 0%,#28343b 100%); 
+}
+.gp-header { font-size: 1.4em; }
+.body, .gp-pane { background: #ddd }
+.gp-right.gp-col { border-left: 1px solid black; }
+.gp-right.gp-col .body { padding: 0 1em; }
+.gp-listview { padding: 0; margin: 0; font-weight: bold; color: #444; }
+.gp-listview li { list-style-type: none; background: #eee; padding: 1em; border-top: 1px solid #aaa; border-bottom: 1px solid #fff; cursor: pointer; }
+.gp-listview li.selected { background-color: #37F; color: White; }
+            
+.gp-listview.inset { margin: 1em 0; }
+.gp-listview.inset li { background: white; border: 2px solid #aaa; border-bottom-width: 0; }
+.gp-listview.inset li:first-child { border-radius: 1em 1em 0em 0em }
+.gp-listview.inset li:last-child { border-radius: 0em 0em 1em 1em; border-bottom-width: 2px; }
+            
+.gp-tiles { overflow-y: hidden; }
+.gp-tiles > ul { width: 1175px; }
+.gp-tiles ul { margin: 0; padding: 0; white-space: nowrap; }
+.gp-tiles li { list-style-type: none; display: inline-block; background-color: #080; width:150px; height: 150px; padding: 1em; color: White; margin: 5px; font-weight: bold; zoom:1; *display: inline; }
+
+button { display: block; border: 2px solid #aaa; line-height: normal; background-color: White; border-radius: 8px; margin: 8px 0; cursor: pointer; padding: 5px 20px; font-weight: bold; color: #333; }
+// end from  http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/]
+
+
+
 
 $from-color: #966;
 $to-color: #44F;

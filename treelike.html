@@ -15,10 +15,75 @@
     <script type="text/javascript" src="./treelike.js"></script>
 
     <link type="text/css" rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css"/>
-    <link type="text/css" rel="stylesheet" href="./treelike.css"/>
     <script type="text/javascript" src="./lib/bootstrap/js/bootstrap.js"></script>
+<!--
+-->
+    <link type="text/css" rel="stylesheet" href="./treelike.css"/>
+    <style type="text/css">
+        /* Pane configuration */
+        .gp-left.gp-col { width: 250px; }
+        .gp-right.gp-col { left: 250px; right: 0; }
+        .gp-header.gp-row { height: 175px; }
+        .body.gp-row { top: 75px; bottom: 50px; }
+        .gp-footer.gp-row { height: 50px; bottom: 0; line-height: 50px; }
+    </style>
   </head>
   <body>
+    <div class="gp-left gp-col">
+            <div class="gp-header gp-row">
+                <input type=file id=files name=files[] />
+                <!--
+                <a id="save-dataset">Save dataset</a>
+                <a href="javascript:restoreData()">Restore dataset</a>
+                -->
+            </div>
+            <div class="body gp-row gp-scroll-y unused-dims">
+                <ul class="gp-listview dim-list">
+                    <li>
+                        <div>dim name</div>
+                        <small>stuff</small>
+                        <div class="progress">
+                            <div class="bar" style="width: 60%;">text here</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="gp-footer gp-row">
+                Icons go here
+            </div>
+        </div>
+        <div class="gp-right gp-col">
+            <div class="gp-header gp-row">
+                View or edit something
+            </div>
+            <div class="body gp-row gp-scroll-y" id="main-pane">
+                <!--
+                <h3>Here are some other controls</h3>
+                <ul class="listview inset">
+                    <li>One</li><li>Two</li><li>Three</li>
+                </ul>
+
+                <p>... and here's a horizontally-scrollable thing:</p>
+
+                <div class="scroll-x tiles">
+                    <ul>
+                        <li>Asia</li>
+                        <li>Africa</li>
+                        <li>America</li>
+                        <li>Antarctica</li>
+                        <li>Australia</li>
+                        <li>Europe</li>
+                    </ul>
+                </div>
+
+                <p>That's enough.</p><p>That's enough.</p><p>That's enough.</p>
+                -->
+            </div>
+            <div class="gp-footer gp-row">
+                Some status text here
+            </div>
+        </div>
+<!--
         <div id="viz" class="viz group container-fluid">
             <div id=inputs class="row-fluid">
                 <div class="span2">
@@ -53,101 +118,18 @@
                 <div class="legend span4"></div>
             </div>
         </div>
+-->
     <script type="text/javascript">
+if (navigator.userAgent.indexOf("IEMobile") >= 0) {
+    document.body.className += " iemobile";
+    window.onscroll = function () { window.scroll(0, 0) }
+}
         var gbo = {}, restoreData;  // GLOBAL DATA OBJECT
         $(function() {
-
-            restoreData = function() {
-                console.log($.eventReport());
-                var dataSet = JSON.parse(LZString.decompress(
-                        localStorage.getItem('dataSet')));
-                dataSet.__proto__ = treelike.DataSet.prototype;
-                treelike.collapsibleTree.init(dataSet, 'div.tree');
-                var browserUI = treelike.browserUI.init(dataSet);
-                console.log('loaded DataSet');
-                console.log($.eventReport());
-            };
-            $(document).ready(function() {
-                if(isAPIAvailable()) {
-                $('#files').bind('change', handleFileSelect);
-                }
-            });
-
-            function isAPIAvailable() {
-                // Check for the various File API support.
-                if (window.File && window.FileReader && window.FileList && window.Blob) {
-                // Great success! All the File APIs are supported.
-                return true;
-                } else {
-                // source: File API availability - http://caniuse.com/#feat=fileapi
-                // source: <output> availability - http://html5doctor.com/the-output-element/
-                document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
-                // 6.0 File API & 13.0 <output>
-                document.writeln(' - Google Chrome: 13.0 or later<br />');
-                // 3.6 File API & 6.0 <output>
-                document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
-                // 10.0 File API & 10.0 <output>
-                document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
-                // ? File API & 5.1 <output>
-                document.writeln(' - Safari: Not supported<br />');
-                // ? File API & 9.2 <output>
-                document.writeln(' - Opera: Not supported');
-                return false;
-                }
-            }
-
-            function handleFileSelect(evt) {
-                var files = evt.target.files; // FileList object
-                _(files).each(function(file) {
-                    file.basename = file.name.replace(/\.[^\.]+$/, '');
-                    gbo[file.basename] = new treelike.DataSet(
-                        { file: file, loaded: false });
-                    var reader = new FileReader();
-                    reader.readAsText(file);
-                    reader.onload = function(event){
-                        var csv = event.target.result;
-                        csv = csv.replace(/\r/g,'\n');  // does this fix a csv library bug?
-                        var dataSet = gbo[file.basename];
-                        //dataSet.raw = csv;  // too big, don't hold on to
-                        dataSet.loaded = true;
-                        var data;
-                        if (csv.slice(0,1) === '{' || csv.slice(0,1) === '[') {
-                            data = JSON.parse(csv);
-                        } else if (csv.slice(0,4) === 'var ') {
-                            eval(csv);
-                            var varname = csv.slice(4,50)
-                                .match(/^([a-zA-Z_][a-zA-Z_0-9]*) ?=/)[1];
-                            data = eval(varname);
-                        } else {
-                            data = $.csv.toObjects(csv, {onParseValue:$.csv.hooks.castToScalar});
-                        }
-                        dataSet.dataPrep(data);
-                        //dataSet.array = $.csv.toArrays(csv);
-
-                        var output = '<div class="span2">'
-                        output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
-                        output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
-                        output += file.size + '&nbsp;bytes';
-                        output += "<br/>\n";
-                        output += data.length + '&nbsp;rows';
-                        output += "<br/>\n";
-                        output += 'fields: ' + dataSet.allDims.join(', ');
-                        //(file.lastModifiedDate && ('(' + file.lastModifiedDate.toLocaleDateString() + ')'));
-                        output += '</div>';
-                        var blurb = $(output);
-                        $('#file-list').append(blurb);
-                        blurb.on('click', function() {
-                                whenLoaded(dataSet) });
-                    };
-                    reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
-                });
-                // post the results
-            }
-
             function whenLoaded(dataSet) {
-                treelike.collapsibleTree.init(dataSet, 'div.tree');
+                treelike.collapsibleTree.init(dataSet, '#main-pane');
                 var browserUI = treelike.browserUI.init(dataSet);
-                var dimControls = d3.select('div#viz>ul.dim-list').selectAll('li')
+                var dimControls = d3.select('ul.dim-list').selectAll('li')
                     .data(dataSet.dims.slice(0)).enter()
                     .append('li')
                         .attr('class','dropdown')
@@ -175,6 +157,57 @@
                         alert('dataset stored')
                 })
             }
+            function handleFileSelect(evt) {
+                var files = evt.target.files; // FileList object
+                if (files.length !== 1) { throw new Error("weird number of files"); }
+                _(files).each(function(file) {
+                    file.basename = file.name.replace(/\.[^\.]+$/, '');
+                    gbo[file.basename] = new treelike.DataSet(
+                        { file: file, loaded: false });
+                    var reader = new FileReader();
+                    reader.readAsText(file);
+                    reader.onload = function(event){
+                        var csv = event.target.result;
+                        csv = csv.replace(/\r/g,'\n');  // does this fix a csv library bug?
+                        var dataSet = gbo[file.basename];
+                        //dataSet.raw = csv;  // too big, don't hold on to
+                        dataSet.loaded = true;
+                        var data;
+                        if (csv.slice(0,1) === '{' || csv.slice(0,1) === '[') {
+                            data = JSON.parse(csv);
+                        } else if (csv.slice(0,4) === 'var ') {
+                            eval(csv);
+                            var varname = csv.slice(4,50)
+                                .match(/^([a-zA-Z_][a-zA-Z_0-9]*) ?=/)[1];
+                            data = eval(varname);
+                        } else {
+                            data = $.csv.toObjects(csv, {onParseValue:$.csv.hooks.castToScalar});
+                        }
+                        dataSet.dataPrep(data);
+                        whenLoaded(dataSet);
+                        return;
+                        //dataSet.array = $.csv.toArrays(csv);
+
+                        var output = '<div class="span2">'
+                        output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
+                        output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
+                        output += file.size + '&nbsp;bytes';
+                        output += "<br/>\n";
+                        output += data.length + '&nbsp;rows';
+                        output += "<br/>\n";
+                        output += 'fields: ' + dataSet.allDims.join(', ');
+                        //(file.lastModifiedDate && ('(' + file.lastModifiedDate.toLocaleDateString() + ')'));
+                        output += '</div>';
+                        var blurb = $(output);
+                        $('#file-list').append(blurb);
+                        blurb.on('click', function() {
+                                whenLoaded(dataSet) });
+                    };
+                    reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
+                });
+                // post the results
+            }
+
             $.eventReport = function(selector, root) {
                 var s = [];
                 $(selector || '*', root).addBack().each(function() {
@@ -202,6 +235,44 @@
                 return $.eventReport(selector, this);
             }
             //var treelike_inst = treelike.data.load(['myData'], whenLoaded, true);
+            restoreData = function() {
+                console.log($.eventReport());
+                var dataSet = JSON.parse(LZString.decompress(
+                        localStorage.getItem('dataSet')));
+                dataSet.__proto__ = treelike.DataSet.prototype;
+                treelike.collapsibleTree.init(dataSet, 'div.tree');
+                var browserUI = treelike.browserUI.init(dataSet);
+                console.log('loaded DataSet');
+                console.log($.eventReport());
+            };
+            $(document).ready(function() {
+                if(isAPIAvailable()) {
+                $('#files').bind('change', handleFileSelect);
+                }
+            });
+            function isAPIAvailable() {
+                // Check for the various File API support.
+                if (window.File && window.FileReader && window.FileList && window.Blob) {
+                // Great success! All the File APIs are supported.
+                return true;
+                } else {
+                // source: File API availability - http://caniuse.com/#feat=fileapi
+                // source: <output> availability - http://html5doctor.com/the-output-element/
+                document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+                // 6.0 File API & 13.0 <output>
+                document.writeln(' - Google Chrome: 13.0 or later<br />');
+                // 3.6 File API & 6.0 <output>
+                document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+                // 10.0 File API & 10.0 <output>
+                document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+                // ? File API & 5.1 <output>
+                document.writeln(' - Safari: Not supported<br />');
+                // ? File API & 9.2 <output>
+                document.writeln(' - Opera: Not supported');
+                return false;
+                }
+            }
+
         });
     </script>
   </body>

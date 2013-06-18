@@ -23,8 +23,10 @@ treelike.DataSet.prototype.dataPrep = function(data) {
         }
         return d;
     });
+    //this.dimGroups = _.chain(this.allDims).map(function(d) {
+    //    return [d, _.chain(that.data).countBy(d).keys().value()];
     this.dimGroups = _.chain(this.allDims).map(function(d) {
-        return [d, _.chain(that.data).countBy(d).keys().value()];
+        return [d, enlightenedData.group(that.data, d)];
     }).object().value();
     this.defaultWidths = _.chain(this.allDims).map(function(dim) {
         return [dim, Math.max(25,enlightenedData.aggregate(
@@ -143,7 +145,7 @@ treelike.browserUI = (function() {
         })();
     };
     bu.update = function() {
-        updateDims('div.unused-dims', _.difference(dataSet.allDims, dataSet.dims));
+        updateDims('div.unused-dims>ul', _.difference(dataSet.allDims, dataSet.dims));
         updateDims('div.displayed-dims', dataSet.dims, true);
         addButtons();
         // overriding bootstrap.js line 1820
@@ -159,7 +161,77 @@ treelike.browserUI = (function() {
             }
         });
     };
+    function sparkBars(node, arr, width, height, color) {
+        var x = d3.scale.linear()
+                .domain([0, arr.length])
+                .range([0, width]);
+        var y = d3.scale.linear()
+                .domain([0, d3.max(arr)])
+                .range([0, height]);
+        var barWidth = width / arr.length;
+        var svg = node.append('svg')
+            .attr('width', width)
+            .attr('height', height);
+        svg.append('rect')
+            .attr('fill', '#DDA')
+            .attr('width', width)
+            .attr('height', height);
+
+        var bars = svg.selectAll('rect.bar')
+                        .data(arr);
+        bars.enter().append('rect')
+            .attr('class', 'bar')
+            .attr('fill', color)
+            .attr('x', function(d,i) { return x(i) })
+            .attr('y', function(d) { return height - y(d) })
+            .attr('height', function(d) { return y(d) })
+            .attr('width', barWidth);
+    }
     function updateDims(selector, data, align) {
+        var maxValueCount = _.chain(dataSet.dimGroups)
+            .values().pluck('length').max().value();
+        var lis = d3.select(selector).selectAll('li')
+                    .data(data);
+        lis.exit().remove();
+        lis.enter().append('li')
+            .attr('dim', function(d) { return d })
+            .append('span').text(function(d) {
+                var vals = dataSet.dimGroups[d];
+                return vals.length + ' ' + d;
+            });
+        lis.append('span')
+            .each(function(d) {
+                var vals = dataSet.dimGroups[d];
+                var span = d3.select(this);
+                sparkBars( span, 
+                    _.chain(vals).pluck('records').pluck('length').value(),
+                    100, 20, '#777');
+            });
+        return;
+        var templ = _.template(
+            '<li dim="<%=data.dim%>">' +
+            '<%= data.vals %> <%= data.dim %>' +
+            '<%= data.sparkbars %>' +
+            '</li>'
+            //'<div class="progress">' +
+            //'<div class="bar" style="width:<%= data.pct %>%">' +
+            //'</div></div></li>'
+            , null, {variable:'data'});
+        var lis = _(dataSet.allDims).map(function(d,i) {
+                    return templ({
+                        dim:d, 
+                        i: i,
+                        pct:Math.round(100*dataSet.dimGroups[d].length/maxValueCount),
+                        vals: dataSet.dimGroups[d].length,
+                        sparkbars: sparkBars(
+                            _(dataSet.dimGroups[d]).pluck('length'),
+                            100, 20, '#777').outerHTML,
+                    });
+                });
+        $(selector).html(lis.join('\n'));
+        $(selector).find('li').on('click', labelClick);
+        return;
+
             var dimControls = d3.select(selector).select('ul.nav.nav-tabs')
                                 .selectAll('li')
                                 .data(data, _.identity);
@@ -276,6 +348,11 @@ treelike.browserUI = (function() {
                 }
             });
         });
+    }
+    function labelClick(evt) {
+        var dim = $(evt.target).attr('dim');
+        var vals = dataSet.dimGroups[dim];
+        console.log(dim);
     }
     function regularLabelClick(val) {
         var dim = this.parentElement.parentElement.__data__;
