@@ -195,14 +195,12 @@ treelike.browserUI = (function() {
         lis.exit().remove();
         lis.enter().append('li')
             .attr('dim', function(d) { return d })
-            .append('span').text(function(d) {
-                var vals = dataSet.dimGroups[d];
-                return vals.length + ' ' + d;
-            });
-        lis.append('span')
+            .append('span').text(function(d) { return d });
+        lis.append('div')
             .each(function(d) {
                 var vals = dataSet.dimGroups[d];
                 var span = d3.select(this);
+                span.text(vals.length + ' vals ');
                 sparkBars( span, 
                     _.chain(vals).pluck('records').pluck('length').value(),
                     100, 20, '#777');
