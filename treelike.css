@@ -204,8 +204,8 @@ li.label.to {
 /* line 84, treelike.scss */
 path.link {
   fill: none;
-  stroke: #888822;
-  stroke-width: 1.5px; }
+  stroke: #aaaa44;
+  stroke-width: 1px; }
   /* line 88, treelike.scss */
   path.link.from-version {
     stroke: #996666; }

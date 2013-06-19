@@ -51,7 +51,7 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
 
 
 
-$link-color: #882;
+$link-color: #AA4;
 $from-color: #966;
 $to-color: #44F;
 $tab-max-height: 200px;
@@ -84,7 +84,7 @@ li.label.to {
 path.link {
     fill: none;
     stroke: $link-color;
-    stroke-width: 1.5px;
+    stroke-width: 1px;
     &.from-version {
         stroke: $from-color;
     }
