@@ -187,6 +187,7 @@ treelike.browserUI = (function() {
             .attr('height', function(d) { return y(d) })
             .attr('width', barWidth)
             ;
+        return svg;
     }
     function updateDims(selector, data, align) {
         var maxValueCount = _.chain(dataSet.dimGroups)
@@ -196,23 +197,30 @@ treelike.browserUI = (function() {
         lis.exit().remove();
         lis.enter().append('li')
             .attr('dim', function(d) { return d })
-            .append('span').text(function(d) { return d });
-        lis.append('div')
             .each(function(d) {
+                var li = d3.select(this);
+                li.append('span').text(function(d) { return d });
+                li.append('span').attr('class','buttons');
                 var vals = dataSet.dimGroups[d];
-                var span = d3.select(this);
-                span.text(vals.length + ' val' + 
+                var chart = li.append('div');
+                chart.text(vals.length + ' val' + 
                     (vals.length === 1 ? '' : 's') + ' ');
-                sparkBars( span, 
-                    _.chain(vals).pluck('records').pluck('length').value(),
-                    100, 20, '#777');
-                span.on('mouseover', function(d) {
-                    treelike.tooltip.showTooltip(vals.rawValues());
-                });
-                span.on('mouseover', function(d) {
-                    treelike.tooltip.hideTooltip();
-                });
-            })
+                sparkBars( chart, 
+                        _.chain(vals).pluck('records').pluck('length').value(),
+                        100, 20, '#777')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip( //vals.rawValues().join(', '));
+                            _(vals).map(function(d) {
+                                return d + ' (' + d.records.length + ' recs)'
+                            }).join('<br/>\n'), 
+                                {'font-size': '11px', 'font-weight':'normal'}
+                                );
+                    })
+                    .on('mouseout', function(d) {
+                        treelike.tooltip.hideTooltip();
+                    });
+
+            });
 
         return;
         var templ = _.template(
@@ -306,12 +314,13 @@ treelike.browserUI = (function() {
 
     };
     function addButtons() {
-        var uls = d3.selectAll('div.tab-content div.btn-group');
+        //var uls = d3.selectAll('div.tab-content div.btn-group');
+        var uls = d3.selectAll('ul.dim-list span.buttons');
         uls.each(function(d) {
             var ul = d3.select(this);
             ul.selectAll('button').remove();
             if (dataSet.dims.indexOf(d) === -1) {
-                ul.append('button').attr('class','btn').text('Show')
+                ul.append('button').attr('class','btn btn-mini').text('Show')
                     .on('click', function(dim) {
                         dataSet.dims.push(dim);
                         var opts = {excludeValues: filteredValues(dim)};
@@ -321,14 +330,14 @@ treelike.browserUI = (function() {
                         bu.update();
                     });
             } else {
-                ul.append('button').attr('class','btn').text('Remove')
+                ul.append('button').attr('class','btn btn-mini').text('Remove')
                 .on('click', function(dimToRemove) {
                     dataSet.spliceDim(dimToRemove);
                     treelike.collapsibleTree.root = dataSet.rootVal;
                     treelike.collapsibleTree.update(treelike.collapsibleTree.root);
                     bu.update();
                 });
-                d !== dataSet.dims[0] && ul.append('button').attr('class','btn')
+                d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
                     .text(function(d) {
                         //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
                         return treelike.collapsibleTree.mergedDims[d+''] ?
@@ -342,11 +351,11 @@ treelike.browserUI = (function() {
                         bu.update();
                     });
             }
-            ul.append('button').attr('class','btn').text('Compare 2')
+            ul.append('button').attr('class','btn btn-mini').text('Compare 2')
                 .on('click', compare2)
             ul.each(function(d) {
                 if (filteredValues(d).length) {
-                    d3.select(this).append('button').attr('class','btn')
+                    d3.select(this).append('button').attr('class','btn btn-mini')
                         .text('Unhide values')
                         .on('click', function(d) {
                             delete valueFilters[d];
@@ -525,6 +534,7 @@ treelike.tooltip = (function(d3) {
         viz = d3.select('body');
         tooltip = viz.append("div")
             .style("display", "none")
+            .style("max-width", "500px")
             //.style("background-color", "#DD8")
             .style("background-color", "rgba(242, 242, 180, .8)")
             .style("font-weight", "bold")
@@ -532,7 +542,7 @@ treelike.tooltip = (function(d3) {
             .style("position", "absolute");
         initialized = true;
     }
-    tt.showTooltip = function(html) {
+    tt.showTooltip = function(html, styles) {
         if (!initialized) initialize();
         var m = d3.mouse(d3.select('body').node());
         tooltip
@@ -540,6 +550,11 @@ treelike.tooltip = (function(d3) {
             .style("left", m[0] + 30 + "px")
             .style("top", m[1] - 30 + "px")
             .html(html);
+        if (typeof styles === "object") {
+            for (var s in styles) {
+                tooltip.style(s, styles[s]);
+            }
+        }
     }
     tt.hideTooltip = function() {
         tooltip && tooltip.style("display", "none");
