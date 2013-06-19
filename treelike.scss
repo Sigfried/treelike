@@ -49,6 +49,15 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
 // end from  http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/]
 
 
+.btn-mini {
+    padding: 0 6px;
+    font-size: 10.5px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+
 
 
 $link-color: #882;
