@@ -82,14 +82,20 @@ treelike.DataSet.prototype.dimPos = function(dim) {
     if (dim === 'Root') {
         return 0;
     }
+    if (! _(this.dimWidths).has(dim)) {
+        throw new Error("no width set for " + dim);
+    }
     var idx = _(this.dims).indexOf(dim);
     if (idx === -1) {
         throw new Error("asked for pos of unused dim");
     }
-    if (! _(this.dimWidths).has(dim)) {
-        throw new Error("no width set for " + dim);
+    var pos = 0;
+    if (idx < this.dims.length - 1) {
+        // last level sticks out, doesn't need space
+        idx++;
+    } else {
+        pos = 70;
     }
-    var pos = this.dimWidths['Root'];  // shouldn't always include Root!!
     pos = _(this.dims.slice(0, idx)).reduce(function(memo, d) {
         return memo + that.dimWidths[d];
     }, pos);
@@ -108,7 +114,7 @@ treelike.browserUI = (function() {
                             return _(p[1]).map(function(d){return p[0]+':'+d})
                         })
                         .flatten(true).value();
-            $('.search-box input[type=text]').typeahead({
+            false && $('.search-box input[type=text]').typeahead({
                 source: dimVals,
                 items: 100,
                 minLength: 2,
@@ -326,17 +332,21 @@ treelike.browserUI = (function() {
                         var opts = {excludeValues: filteredValues(dim)};
                         dataSet.rootVal.extendGroupBy(dim, opts);
                         treelike.collapsibleTree.root = dataSet.rootVal;
-                        treelike.collapsibleTree.update(treelike.collapsibleTree.root);
+                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
                         bu.update();
                     });
+                ul.append('button').attr('class','btn btn-mini').text('Comp2')
+                    .on('click', compare2)
             } else {
+                ul.append('button').attr('class','btn btn-mini').text('Comp2')
+                    .on('click', compare2)
                 ul.append('button').attr('class','btn btn-mini').text('Remove')
-                .on('click', function(dimToRemove) {
-                    dataSet.spliceDim(dimToRemove);
-                    treelike.collapsibleTree.root = dataSet.rootVal;
-                    treelike.collapsibleTree.update(treelike.collapsibleTree.root);
-                    bu.update();
-                });
+                    .on('click', function(dimToRemove) {
+                        dataSet.spliceDim(dimToRemove);
+                        treelike.collapsibleTree.root = dataSet.rootVal;
+                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+                        bu.update();
+                    });
                 d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
                     .text(function(d) {
                         //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
@@ -350,9 +360,11 @@ treelike.browserUI = (function() {
                         treelike.collapsibleTree.toggleMerge(d+'');
                         bu.update();
                     });
+                ul.append('button').attr('class','btn btn-mini').text('+')
+                    .on('click', function(dim) { makeWider(dim); });
+                ul.append('button').attr('class','btn btn-mini').text('-')
+                    .on('click', function(dim) { makeNarrower(dim); });
             }
-            ul.append('button').attr('class','btn btn-mini').text('Compare 2')
-                .on('click', compare2)
             ul.each(function(d) {
                 if (filteredValues(d).length) {
                     d3.select(this).append('button').attr('class','btn btn-mini')
@@ -364,6 +376,14 @@ treelike.browserUI = (function() {
                 }
             });
         });
+    }
+    function makeWider(dim) {
+        dataSet.dimWidths[dim] += 50;
+        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+    }
+    function makeNarrower(dim) {
+        dataSet.dimWidths[dim] -= 50;
+        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
     }
     function labelClick(evt) {
         var dim = $(evt.target).attr('dim');
@@ -377,7 +397,7 @@ treelike.browserUI = (function() {
         if (_(dataSet.dims).contains(dim)) {
             dataSet.spliceDim(dim, {excludeValues: filteredValues(dim), keepDim: true});
             treelike.collapsibleTree.root = dataSet.rootVal;
-            treelike.collapsibleTree.update(treelike.collapsibleTree.root);
+            treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
         }
         bu.update();
     }
@@ -441,7 +461,7 @@ treelike.browserUI = (function() {
         var to = enlightenedData.group(dataSet.data, d)[compareSettings.toIdx];
         dataSet.rootVal = enlightenedData.compareValue(from, to);
         treelike.collapsibleTree.root = dataSet.rootVal;
-        treelike.collapsibleTree.update(treelike.collapsibleTree.root);
+        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
         bu.update();
         var buttons = d3.select('#' + d).selectAll('li.label')
         buttons
@@ -564,10 +584,10 @@ treelike.tooltip = (function(d3) {
 treelike.collapsibleTree = (function($, d3) {
     var ct = new function() {}, dataSet, valsSeen;
     ct.mergedDims = {};
-    var m = [20, 80, 20, 80],
+    var m = [20, 20, 20, 20],
         w = $(window).width() - m[1] - m[3],
         h = 600 - m[0] - m[2],
-        i = 0,
+        idCtr = 0,
         tree, diagonal, vis, nodes, node, link;
     ct.init = function(o, targetSelector) {
         w = $(targetSelector).width() - m[1] - m[3],
@@ -592,7 +612,7 @@ treelike.collapsibleTree = (function($, d3) {
         //root.children.forEach(toggleAll);
         ct.update(root);
     };
-    ct.update = function(source) {
+    ct.update = function(source, drawFromScratch) {
         if (!tree) {
             ct.recalc(source);
         }
@@ -614,9 +634,12 @@ treelike.collapsibleTree = (function($, d3) {
             d.y = dataSet.dimPos(d.dim);
         });
 
+        if (drawFromScratch) {
+            vis.selectAll("g.node").remove();
+        }
         // Update the nodes…
         node = vis.selectAll("g.node")
-            .data(nodes, function(d) { return d.id || (d.id = ++i); });
+            .data(nodes, function(d) { return d.id || (d.id = ++idCtr); });
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node.enter().append("svg:g")
@@ -639,129 +662,17 @@ treelike.collapsibleTree = (function($, d3) {
             })
             ;
 
-        function legendReport(node, d) {
-            var l = d3.select('div.legend');
-            var dl = l.selectAll('dl').data([d]);
-            dl.exit().remove();
-            dl.enter().append('dl').attr('class', 'dl-horizontal');
-            var facts = {};
-            facts['dim path'] = d.dimPath();
-            facts['val path'] = d.namePath();
-            var dimVals;
-            var cs = treelike.browserUI.compareSettings();
-            dimVals = _(dataSet.allDims).map(function(dim) {
-                var g;
-                if (cs.dim) {
-                    g = (d.in === "both") ?
-                            enlightenedData.diffGroup(d.from, d.to, dim) :
-                            enlightenedData.group(d.records, dim);
-                    _(g).each(function(d) { d.extendGroupBy(cs.dim) });
-                } else {
-                    g = enlightenedData.group(d.records, dim);
-                }
-                return g;
-            });
-            var maxVals = _.chain(dimVals).values()
-                                .map(function(d){return d.length})
-                                .max().value();
-            /*
-            var rectProportion = 5; // width:height is 5:1
-            var scale = d3.scale.pow(1/2)
-                            .domain([0,maxVals * rectProportion])
-                            .range([10,100])
-            */
-            var scale = d3.scale.linear()
-                            .domain([0,maxVals])
-                            .range([0,100]);
-            _(dimVals).each(function(list) {
-                var bar;
-                var width = scale(list.length);
-                if (cs.dim && d.in === "both") {
-                    var fromRecs = _.chain(list)
-                        .map(function(d) {return d.from}).filter(_.identity)
-                        .pluck('records').pluck('length').value();
-                    var fromCnt = enlightenedData.aggregate(fromRecs).sum;
-                    var toRecs = _.chain(list)
-                        .map(function(d) {return d.to}).filter(_.identity)
-                        .pluck('records').pluck('length').value();
-                    var toCnt = enlightenedData.aggregate(toRecs).sum;
-                    var fromProp = fromCnt / (fromCnt + toCnt);
-                    bar = makeBar(width * fromProp, '#966') +
-                          makeBar(width * (1 - fromProp), '#44F') +
-                          ' ' + list.length 
-                        /*
-                        + '(' +
-                        $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
-                            .css('background-color', '#966')[0].outerHTML +
-                        $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
-                            .css('background-color', '#966')[0].outerHTML +
-                        ')'
-                        */
-                } else {
-                    var color = cs.dim ? 
-                        ((d.in === 'from') ? '#966' : '#44F') : '#888';
-                    bar = makeBar(width, color) + ' ' + list.length;
-                }
-                facts[list.dim + ' values'] = bar;
-            });
-            dl.html( _.chain(facts).pairs().map(function(pair) {
-                        return '<dt>' + pair[0] + '</dt><dd>' + pair[1] + '</dd>';
-                    }).join('\n').value());
-        }
-        function makeBar(width, color) {
-            return $('<div></div>')
-                .css('background-color', color)
-                .css('display', 'inline-block')
-                .width(width)
-                .height('1em')[0].outerHTML;
-        }
-        function nodeHighlight(node) {
-            if (_(node.__data__).has('mergeWith')) {
-                node = node.__data__.mergeWith.gNode;
-            }
-            var t = d3.select(node).select('text');
-            if (!_(t.node()).has('fontSizeOrig')) {
-                t.node().fontSizeOrig = t.style('font-size');
-            }
-            t.style('font-weight','bold').style('font-size',parseInt(t.node().fontSizeOrig) * 1.5);
-        }
-        function nodeUnhighlight(node) {
-            if (_(node.__data__).has('mergeWith')) {
-                node = node.__data__.mergeWith.gNode;
-            }
-            var t = d3.select(node).select('text');
-            if (_(t.node()).has('fontSizeOrig')) {
-                t.style('font-weight','normal').style('font-size',t.node().fontSizeOrig);
-            }
-        }
-        function highlightRelated(thisNode, d, on) {
-            (on ? nodeHighlight : nodeUnhighlight)(thisNode);
-            var nodesHere = [thisNode];
-            if (_(d).has('mergeList')) {
-                nodesHere = nodesHere.concat(_(d.mergeList).pluck('gNode'));
-            }
-            _(nodesHere).each(function(node) {
-                _.each(node.__data__.childLinks, function(c) {
-                    var s = d3.select(c);
-                    s.style('stroke', d3.rgb(s.style('stroke'))[(on ? 'darker' : 'brighter')](3));
-                    (on ? nodeHighlight : nodeUnhighlight)(c.__data__.target.gNode);
-                });
-                _.each(node.__data__.parentLinks, function(c) {
-                    var s = d3.select(c);
-                    s.style('stroke', d3.rgb(s.style('stroke'))[(on ? 'darker' : 'brighter')](3));
-                    (on ? nodeHighlight : nodeUnhighlight)(c.__data__.source.gNode);
-                });
-            });
-        }
         nodeEnter.append("svg:circle")
             .attr("r", 1e-6)
             .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
             ;
 
         nodeEnter.append("svg:text")
-            .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+            .attr("x", function(d) { 
+                return d.children || d._children ? -10 : 10; })
             .attr("dy", ".35em")
-            .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+            .attr("text-anchor", function(d) { 
+                return d.children || d._children ? "end" : "start"; })
             .text(function(d) { return d+''; })
             .style("fill-opacity", 1e-6);
 
@@ -831,6 +742,120 @@ treelike.collapsibleTree = (function($, d3) {
             .remove();
 
         transition(duration);
+    }
+    function legendReport(node, d) {
+        var l = d3.select('div.legend');
+        var dl = l.selectAll('dl').data([d]);
+        dl.exit().remove();
+        dl.enter().append('dl').attr('class', 'dl-horizontal');
+        var facts = {};
+        facts['dim path'] = d.dimPath();
+        facts['val path'] = d.namePath();
+        var dimVals;
+        var cs = treelike.browserUI.compareSettings();
+        dimVals = _(dataSet.allDims).map(function(dim) {
+            var g;
+            if (cs.dim) {
+                g = (d.in === "both") ?
+                        enlightenedData.diffGroup(d.from, d.to, dim) :
+                        enlightenedData.group(d.records, dim);
+                _(g).each(function(d) { d.extendGroupBy(cs.dim) });
+            } else {
+                g = enlightenedData.group(d.records, dim);
+            }
+            return g;
+        });
+        var maxVals = _.chain(dimVals).values()
+                            .map(function(d){return d.length})
+                            .max().value();
+        /*
+        var rectProportion = 5; // width:height is 5:1
+        var scale = d3.scale.pow(1/2)
+                        .domain([0,maxVals * rectProportion])
+                        .range([10,100])
+        */
+        var scale = d3.scale.linear()
+                        .domain([0,maxVals])
+                        .range([0,100]);
+        _(dimVals).each(function(list) {
+            var bar;
+            var width = scale(list.length);
+            if (cs.dim && d.in === "both") {
+                var fromRecs = _.chain(list)
+                    .map(function(d) {return d.from}).filter(_.identity)
+                    .pluck('records').pluck('length').value();
+                var fromCnt = enlightenedData.aggregate(fromRecs).sum;
+                var toRecs = _.chain(list)
+                    .map(function(d) {return d.to}).filter(_.identity)
+                    .pluck('records').pluck('length').value();
+                var toCnt = enlightenedData.aggregate(toRecs).sum;
+                var fromProp = fromCnt / (fromCnt + toCnt);
+                bar = makeBar(width * fromProp, '#966') +
+                        makeBar(width * (1 - fromProp), '#44F') +
+                        ' ' + list.length 
+                    /*
+                    + '(' +
+                    $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
+                        .css('background-color', '#966')[0].outerHTML +
+                    $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
+                        .css('background-color', '#966')[0].outerHTML +
+                    ')'
+                    */
+            } else {
+                var color = cs.dim ? 
+                    ((d.in === 'from') ? '#966' : '#44F') : '#888';
+                bar = makeBar(width, color) + ' ' + list.length;
+            }
+            facts[list.dim + ' values'] = bar;
+        });
+        dl.html( _.chain(facts).pairs().map(function(pair) {
+                    return '<dt>' + pair[0] + '</dt><dd>' + pair[1] + '</dd>';
+                }).join('\n').value());
+    }
+    function makeBar(width, color) {
+        return $('<div></div>')
+            .css('background-color', color)
+            .css('display', 'inline-block')
+            .width(width)
+            .height('1em')[0].outerHTML;
+    }
+    function nodeHighlight(node) {
+        if (_(node.__data__).has('mergeWith')) {
+            node = node.__data__.mergeWith.gNode;
+        }
+        var t = d3.select(node).select('text');
+        if (!_(t.node()).has('fontSizeOrig')) {
+            t.node().fontSizeOrig = t.style('font-size');
+        }
+        t.style('font-weight','bold').style('font-size',parseInt(t.node().fontSizeOrig) * 1.5);
+    }
+    function nodeUnhighlight(node) {
+        if (_(node.__data__).has('mergeWith')) {
+            node = node.__data__.mergeWith.gNode;
+        }
+        var t = d3.select(node).select('text');
+        if (_(t.node()).has('fontSizeOrig')) {
+            t.style('font-weight','normal').style('font-size',t.node().fontSizeOrig);
+        }
+    }
+    function highlightRelated(thisNode, d, on) {
+        (on ? nodeHighlight : nodeUnhighlight)(thisNode);
+        var nodesHere = [thisNode];
+        if (_(d).has('mergeList')) {
+            nodesHere = nodesHere.concat(_(d.mergeList).pluck('gNode'));
+        }
+        _(nodesHere).each(function(node) {
+            _.each(node.__data__.childLinks, function(c) {
+                var s = d3.select(c);
+                s.style('stroke', d3.rgb(s.style('stroke'))[(on ? 'darker' : 'brighter')](3));
+                (on ? nodeHighlight : nodeUnhighlight)(c.__data__.target.gNode);
+            });
+            _.each(node.__data__.parentLinks, function(c) {
+                var s = d3.select(c);
+                s.style('stroke', d3.rgb(s.style('stroke'))[(on ? 'darker' : 'brighter')](3));
+                (on ? nodeHighlight : nodeUnhighlight)(c.__data__.source.gNode);
+            });
+        });
     }
     function transition(duration, delay) {
         duration = duration || 1000;
