@@ -58,38 +58,6 @@ treelike.DataSet.prototype.spliceDim = function(dimToRemove, opts) {
         opts.excludeValues = treelike.browserUI.filteredValues(d);
         that.rootVal.extendGroupBy(d, opts);
     });
-    return;
-    var replaceAt = this.dims.indexOf(dimToRemove);
-    var rootVal = this.rootVal;
-    var parentDimNodes;
-    if (rootVal.dim === this.dims[0]) {
-        if (rootVal.dim === dimToRemove) {
-            //rootVal.leafNodes is kind of broken, this is a kludge
-            this.dims.length = 0;
-            this.rootVal = emptyRoot();
-            treelike.browserUI.compareSettingsReset();
-            return;
-        }
-        // root is comparison, first dim in this.dims
-        parentDimNodes = rootVal.leafNodes(replaceAt - 1);
-    } else {
-        // root is fake Root node, not included in dims
-        parentDimNodes = rootVal.leafNodes(replaceAt);
-    }
-    _.each(parentDimNodes, function(d) {
-        delete d.kids;
-        delete d.children;
-        delete d._children;
-        delete d.childLinks;
-    });
-    var addBackDims = this.dims.slice(replaceAt+((opts&&opts.keepDim)?0:1));
-    this.dims.splice(replaceAt);
-    opts = opts || {};
-    _.each(addBackDims, function(d) {
-        that.dims.push(d)
-        opts.excludeValues = treelike.browserUI.filteredValues(d);
-        rootVal.extendGroupBy(d, opts);
-    });
 };
 treelike.DataSet.prototype.dimPos = function(dim) {
     var that = this;
@@ -502,21 +470,6 @@ treelike.browserUI = (function() {
             .on('click',compareLabelClick)
             .on('mouseover',compareLabelMouseover)
     }
-    /*
-    tree.compareTo = function(value) {
-        tree.from(root).to(value);
-        var name = from + ' to ' + to;
-        var val = new String(name);
-        val.from = from;
-        val.to = to;
-        val.depth = 0;
-        val.in = "both";
-        val.records = [].concat(from.records,to.records);
-        val.records.parentVal = val; // NOT TESTED, NOT USED, PROBABLY WRONG
-        val.dim = value.dim;
-        return root = val;
-    };
-    */
     function compareLabelMouseover(val, i) {
         var dim = this.parentElement.parentElement.__data__;
         var tt, filt;
@@ -798,12 +751,6 @@ treelike.collapsibleTree = (function($, d3) {
         var maxVals = _.chain(dimVals).values()
                             .map(function(d){return d.length})
                             .max().value();
-        /*
-        var rectProportion = 5; // width:height is 5:1
-        var scale = d3.scale.pow(1/2)
-                        .domain([0,maxVals * rectProportion])
-                        .range([10,100])
-        */
         var scale = d3.scale.linear()
                         .domain([0,maxVals])
                         .range([0,100]);
@@ -823,14 +770,6 @@ treelike.collapsibleTree = (function($, d3) {
                 bar = makeBar(width * fromProp, '#966') +
                         makeBar(width * (1 - fromProp), '#44F') +
                         ' ' + list.length 
-                    /*
-                    + '(' +
-                    $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
-                        .css('background-color', '#966')[0].outerHTML +
-                    $('<span>' + (list.kids ? list.kids.length : 0) + '</span>')
-                        .css('background-color', '#966')[0].outerHTML +
-                    ')'
-                    */
             } else {
                 var color = cs.dim ? 
                     ((d.in === 'from') ? '#966' : '#44F') : '#888';
