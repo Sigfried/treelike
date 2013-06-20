@@ -199,7 +199,7 @@ treelike.browserUI = (function() {
                         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
                         bu.update();
                     })
-                    .text('x')
+                    .append('i').attr('class', ' icon-remove');
                 li.append('span').text(function(d) { return d });
                 li.append('span').attr('class','buttons');
                 var vals = dataSet.dimGroups[d];
@@ -324,7 +324,8 @@ treelike.browserUI = (function() {
             var ul = d3.select(this);
             ul.selectAll('button').remove();
             if (dataSet.dims.indexOf(d) === -1) {
-                ul.append('button').attr('class','btn btn-mini').text('Show')
+                ul.append('button').attr('class','btn btn-mini')
+                    //.text('Show')
                     .on('click', function(dim) {
                         dataSet.dims.push(dim);
                         var opts = {excludeValues: filteredValues(dim)};
@@ -332,19 +333,24 @@ treelike.browserUI = (function() {
                         treelike.collapsibleTree.root = dataSet.rootVal;
                         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
                         bu.update();
-                    });
-                ul.append('button').attr('class','btn btn-mini').text('Comp2')
+                    })
+                    .append('i').attr('class', 'icon-plus')
+                    ;
+                ul.append('button').attr('class','btn btn-mini')
                     .on('click', compare2)
+                    .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>');
             } else {
-                ul.append('button').attr('class','btn btn-mini').text('Comp2')
+                ul.append('button').attr('class','btn btn-mini')
                     .on('click', compare2)
-                ul.append('button').attr('class','btn btn-mini').text('Remove')
+                    .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>');
+                ul.append('button').attr('class','btn btn-mini')
                     .on('click', function(dimToRemove) {
                         dataSet.spliceDim(dimToRemove);
                         treelike.collapsibleTree.root = dataSet.rootVal;
                         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
                         bu.update();
-                    });
+                    })
+                    .append('i').attr('class', 'icon-minus');
                 d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
                     .text(function(d) {
                         //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
@@ -358,10 +364,12 @@ treelike.browserUI = (function() {
                         treelike.collapsibleTree.toggleMerge(d+'');
                         bu.update();
                     });
-                ul.append('button').attr('class','btn btn-mini').text('+')
-                    .on('click', function(dim) { makeWider(dim); });
-                ul.append('button').attr('class','btn btn-mini').text('-')
-                    .on('click', function(dim) { makeNarrower(dim); });
+                ul.append('button').attr('class','btn btn-mini')
+                    .on('click', function(dim) { makeWider(dim); })
+                    .append('i').attr('class', ' icon-resize-full');
+                ul.append('button').attr('class','btn btn-mini')
+                    .on('click', function(dim) { makeNarrower(dim); })
+                    .append('i').attr('class', ' icon-resize-small');
             }
             ul.each(function(d) {
                 if (filteredValues(d).length) {
@@ -573,7 +581,8 @@ treelike.collapsibleTree = (function($, d3) {
         idCtr = 0,
         tree, diagonal, vis, nodes, node, link;
     ct.init = function(o, targetSelector) {
-        w = $(targetSelector).width() - m[1] - m[3],
+        w = $(targetSelector).width() - m[1] - m[3];
+        h = $(targetSelector).height() - m[0] - m[2];
         dataSet = o; // the obj returned by treelike.data.load
         vis = d3.select(targetSelector).append("svg:svg")
             .attr("width", w + m[1] + m[3])
