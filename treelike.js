@@ -201,7 +201,7 @@ treelike.browserUI = (function() {
                     })
                     .append('i').attr('class', ' icon-remove');
                 li.append('span').text(function(d) { return d });
-                li.append('span').attr('class','buttons');
+                li.append('div').attr('class','buttons');
                 var vals = dataSet.dimGroups[d];
                 var chart = li.append('div');
                 chart.text(vals.length + ' val' + 
@@ -319,7 +319,7 @@ treelike.browserUI = (function() {
     };
     function addButtons() {
         //var uls = d3.selectAll('div.tab-content div.btn-group');
-        var uls = d3.selectAll('ul.dim-list span.buttons');
+        var uls = d3.selectAll('ul.dim-list div.buttons');
         uls.each(function(d) {
             var ul = d3.select(this);
             ul.selectAll('button').remove();
@@ -352,18 +352,20 @@ treelike.browserUI = (function() {
                     })
                     .append('i').attr('class', 'icon-minus');
                 d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
+                    /*
                     .text(function(d) {
-                        //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
                         return treelike.collapsibleTree.mergedDims[d+''] ?
                             'Separate' : 'Merge';
                     })
+                    */
                     .on('click', function(d) {
                         //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
                         //var merge = treelike.collapsibleTree.mergedDims[parentDim] = !  treelike.collapsibleTree.mergedDims[parentDim];
                         //treelike.collapsibleTree.update();
                         treelike.collapsibleTree.toggleMerge(d+'');
                         bu.update();
-                    });
+                    })
+                    .append('i').attr('class', ' icon-random');
                 ul.append('button').attr('class','btn btn-mini')
                     .on('click', function(dim) { makeWider(dim); })
                     .append('i').attr('class', ' icon-resize-full');
