@@ -45,6 +45,20 @@ treelike.DataSet.prototype.emptyRoot = function() {
 treelike.DataSet.prototype.spliceDim = function(dimToRemove, opts) {
     // we want to delete children of the dim before this one
     var that = this;
+    this.dims = _(this.dims).without(dimToRemove);
+    if (opts && opts.fromList) {
+        this.allDims = _(this.allDims).without(dimToRemove);
+    }
+    delete this.rootVal.kids;
+    delete this.rootVal.children;
+    delete this.rootVal._children;
+    delete this.rootVal.childLinks;
+    opts = opts || {};
+    _.each(this.dims, function(d) {
+        opts.excludeValues = treelike.browserUI.filteredValues(d);
+        that.rootVal.extendGroupBy(d, opts);
+    });
+    return;
     var replaceAt = this.dims.indexOf(dimToRemove);
     var rootVal = this.rootVal;
     var parentDimNodes;
@@ -151,8 +165,10 @@ treelike.browserUI = (function() {
         })();
     };
     bu.update = function() {
+        updateDims('div.unused-dims>ul', dataSet.allDims);
+        /*
         updateDims('div.unused-dims>ul', _.difference(dataSet.allDims, dataSet.dims));
-        updateDims('div.displayed-dims', dataSet.dims, true);
+        //updateDims('div.displayed-dims', dataSet.dims, true);  not using now
         addButtons();
         // overriding bootstrap.js line 1820
         $(document).off('click.tab.data-api');
@@ -166,6 +182,7 @@ treelike.browserUI = (function() {
                 $(this).tab('show')
             }
         });
+        */
     };
     function sparkBars(node, arr, width, height, color) {
         var x = d3.scale.linear()
@@ -205,6 +222,16 @@ treelike.browserUI = (function() {
             .attr('dim', function(d) { return d })
             .each(function(d) {
                 var li = d3.select(this);
+                li.append('div')
+                    .attr('class', 'delete-icon')
+                    .on('click', function(d) {
+                        d3.select(this.parentElement).remove();
+                        dataSet.spliceDim(d, {fromList:true});
+                        treelike.collapsibleTree.root = dataSet.rootVal;
+                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+                        bu.update();
+                    })
+                    .text('x')
                 li.append('span').text(function(d) { return d });
                 li.append('span').attr('class','buttons');
                 var vals = dataSet.dimGroups[d];
@@ -225,8 +252,11 @@ treelike.browserUI = (function() {
                     .on('mouseout', function(d) {
                         treelike.tooltip.hideTooltip();
                     });
-
             });
+        lis.classed('displayed-dim', function(d) {
+            return dataSet.dims.indexOf(d) > -1;
+        });
+        addButtons();
 
         return;
         var templ = _.template(

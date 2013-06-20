@@ -32,8 +32,34 @@ body { font-family: 'Helvetica Neue', Arial, Sans-Serif; }
 .gp-right.gp-col { border-left: 1px solid black; }
 .gp-right.gp-col .body { padding: 0 1em; }
 .gp-listview { padding: 0; margin: 0; font-weight: bold; color: #444; }
-.gp-listview li { list-style-type: none; background: #eee; padding: .2em; border-top: 1px solid #aaa; border-bottom: 1px solid #fff; cursor: pointer; }
-.gp-listview li.selected { background-color: #37F; color: White; }
+.gp-listview li { 
+    list-style-type: none; 
+    background: #eee; 
+    padding: .2em; 
+    border-top: 1px solid #aaa; 
+    border-bottom: 1px solid #fff; 
+    //cursor: pointer; 
+
+    position: relative;
+
+    div.delete-icon {
+        position: absolute;
+        top: 0px;
+        right: 8px;
+        font-size: 10px;
+        cursor: pointer; 
+        /*
+            border: 1px solid brown;
+            color: red;
+            height: 1em;
+            width: 1em;
+            text-align: center;
+            vertical-align: top;
+            padding-bottom: 2px;
+            */
+    }
+}
+.gp-listview li.displayed-dim { background-color: #37F; color: White; }
             
 .gp-listview.inset { margin: 1em 0; }
 .gp-listview.inset li { background: white; border: 2px solid #aaa; border-bottom-width: 0; }
@@ -93,10 +119,7 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
     border-radius: 3px;
 }
 
-
-
-
-
+$displayed-color: #AAF;
 $link-color: #AA4;
 $from-color: #966;
 $to-color: #44F;
@@ -116,6 +139,7 @@ body {
     bottom: 0px;
     width: 100%;
 }
+
 
 li.label:hover {
     color: #333;
