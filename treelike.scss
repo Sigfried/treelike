@@ -1,10 +1,17 @@
+$displayed-color: #AAF;
+$link-color: #AA4;
+$from-color: #966;
+$to-color: #44F;
+$tab-max-height: 200px;
 
 // from  http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/]
 
 /* Generic pane rules */
 body { margin: 0; -webkit-text-size-adjust: 100%; }
 .gp-page { left: 0; right: 0; top: 0; bottom: 0; }
-.gp-row, .gp-col, .gp-page { overflow: hidden; position: absolute; }
+.gp-row, .gp-col, .gp-page { 
+    overflow: hidden; 
+    position: absolute; }
 .gp-row { left: 0; right: 0; }
 .gp-col { top: 0; bottom: 0; }
 .gp-scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -23,9 +30,12 @@ body { margin: 0; -webkit-text-size-adjust: 100%; }
 
 body { font-family: 'Helvetica Neue', Arial, Sans-Serif; }
 .gp-header, .gp-footer {
-    color: #eee; background: #696f77; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); padding: 0 0.5em;
+    color: #eee; background: #696f77; 
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5); 
+    padding: 0 0.5em;
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#696f77), color-stop(100%,#28343b));
-    background: -webkit-linear-gradient(top, #696f77 0%,#28343b 100%); background: -ms-linear-gradient(top, #696f77 0%,#28343b 100%); 
+    background: -webkit-linear-gradient(top, #696f77 0%,#28343b 100%); 
+    background: -ms-linear-gradient(top, #696f77 0%,#28343b 100%); 
 }
 .gp-header { font-size: 1.4em; }
 .body, .gp-pane { background: #ddd }
@@ -72,6 +82,13 @@ body { font-family: 'Helvetica Neue', Arial, Sans-Serif; }
 .gp-tiles li { list-style-type: none; display: inline-block; background-color: #080; width:150px; height: 150px; padding: 1em; color: White; margin: 5px; font-weight: bold; zoom:1; *display: inline; }
 
 button { display: block; border: 2px solid #aaa; line-height: normal; background-color: White; border-radius: 8px; margin: 8px 0; cursor: pointer; padding: 5px 20px; font-weight: bold; color: #333; }
+
+.gp-left.gp-col { width: 250px; }
+.gp-right.gp-col { left: 250px; right: 0; }
+.gp-header.gp-row { height: 175px; }
+.body.gp-row { top: 75px; bottom: 50px; }
+.gp-footer.gp-row { height: 50px; bottom: 0; line-height: 50px; }
+
 // end from  http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/]
 
 
@@ -88,6 +105,60 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
     url("./lib/bootstrap/img/glyphicons-halflings.png");
     background-position: 14px 14px;
     background-repeat: no-repeat;
+}
+div.filter-list {
+    line-height: 14px !important;
+    height: auto !important;
+}
+ul.filter-list {
+    margin-left: 0;
+    list-style: none;
+    li {
+        margin: 1px;
+        cursor: pointer;
+        display: inline-block;
+        *display: inline;
+        //padding-right: 5px;
+        //padding-left: 5px;
+        padding: 2px 4px;
+        *zoom: 1;
+
+        line-height: 14px;
+        background-color: #333;
+        color: #fff;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        padding: 2px 4px;
+        font-size: 11.844px;
+        font-weight: bold;
+        line-height: 14px;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+        white-space: nowrap;
+        vertical-align: baseline;
+        list-style: none;
+        &:hover {
+            background-color: #eee;
+            color: #333;
+            opacity: 1 !important;
+        }
+        &.from {
+            background-color: $from-color !important;
+        }
+        &.to {
+            background-color: $to-color !important;
+        }
+        &.label-inverse {
+            color: #333;
+            background-color: #eee;
+            opacity: 0.5;
+            &:hover {
+                color: #fff;
+                background-color: #333;
+                opacity: 1 !important;
+            }
+        }
+    }
 }
 
 .icon-glass {
@@ -696,11 +767,6 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
     border-radius: 3px;
 }
 
-$displayed-color: #AAF;
-$link-color: #AA4;
-$from-color: #966;
-$to-color: #44F;
-$tab-max-height: 200px;
 /*
 body {
     position:fixed !important;
@@ -717,17 +783,6 @@ body {
     width: 100%;
 }
 
-
-li.label:hover {
-    color: #333;
-    background-color: #EEE;
-}
-li.label.from {
-    background-color: $from-color !important;
-}
-li.label.to {
-    background-color: $to-color !important;
-}
 path.link {
     fill: none;
     stroke: $link-color;
