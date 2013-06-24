@@ -272,15 +272,25 @@ treelike.browserUI = (function() {
                 .append('li')
                     .attr('class', 'label')
                     .text(function(d) { return d })
-                .on('click', regularLabelClick)
-                .on('mouseover', regularLabelMouseover)
+                .on('click', labelClick)
+                .on('mouseover', labelMouseover)
                 .on('mouseout', function(d) {
                     treelike.tooltip.hideTooltip();
                 })
-                .classed('label-inverse', function(val) {
+                .classed('label-filtered', function(val) {
                     var dim = val.dim;
                     return (valueFilters[dim] && valueFilters[dim][val]);
                 })
+        if (compareSettings.dim) {
+            var buttons = footer.select('ul.filter-list').selectAll('li.label')
+            buttons
+                .classed('from', function(val) { 
+                    return val === compareSettings.from })
+                .classed('to', function(val) { 
+                    return val === compareSettings.to })
+                .on('click',labelClick)
+                .on('mouseover',labelMouseover)
+        }
     }
     function addButtons() {
         //var uls = d3.selectAll('div.tab-content div.btn-group');
@@ -358,31 +368,49 @@ treelike.browserUI = (function() {
         dataSet.dimWidths[dim] -= 50;
         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
     }
-    function regularLabelClick(val) {
+    function labelClick(val, i) {
         var dim = val.dim;
-        console.log('trying to toggle ' + dim + ': ' + val);
-        toggleValue(dim, val);
-        if (_(dataSet.dims).contains(dim)) {
-            dataSet.refreshRoot({excludeValues: filteredValues(dim), keepDim: true});
-            treelike.collapsibleTree.root = dataSet.rootVal;
-            treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+        if (compareSettings.dim) {
+            var dim = val.dim;
+            var change = compareRequest(val, i, this);
+            compareSettings[change + 'Idx'] = i;
+            compare2(dim, change, val);
+            filterDimension(dim);
+        } else {
+            toggleValue(dim, val);
+            if (_(dataSet.dims).contains(dim)) {
+                dataSet.refreshRoot({excludeValues: filteredValues(dim), keepDim: true});
+                treelike.collapsibleTree.root = dataSet.rootVal;
+                treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+            }
+            bu.update();
+            filterDimension(dim);
         }
-        bu.update();
-        filterDimension(dim);
     }
-    function regularLabelMouseover(val) {
+    function labelMouseover(val, i) {
         var dim = val.dim;
         var tt, filt;
-        if (!valueFilters[dim]) {
-            tt = 'Hide others';
-        } else {
-            if (valueFilters[dim][val]) {
-                tt = 'Show';
+        if (compareSettings.dim && compareSettings.dim === dim) {
+            var change = compareRequest(val, i, this);
+            if (change === 'from') {
+                tt = 'Compare ' + val + ' and ' + compareSettings.to;
+            } else if (change === 'to') {
+                tt = 'Compare ' + compareSettings.from + ' and ' + val;
             } else {
-                if (valueFilters[dim].pivot === val) {
-                    tt = 'Hide this, show others';
+                return;
+            }
+        } else {
+            if (!valueFilters[dim]) {
+                tt = 'Hide others';
+            } else {
+                if (valueFilters[dim][val]) {
+                    tt = 'Show';
                 } else {
-                    tt = 'Hide';
+                    if (valueFilters[dim].pivot === val) {
+                        tt = 'Hide this, show others';
+                    } else {
+                        tt = 'Hide';
+                    }
                 }
             }
         }
@@ -404,6 +432,7 @@ treelike.browserUI = (function() {
             return which;
         }
     }
+    /*
     function compareLabelClick(val, i) {
         var dim = val.dim;
         var change = compareRequest(val, i, this);
@@ -411,6 +440,7 @@ treelike.browserUI = (function() {
         compare2(dim, change, val);
         filterDimension(dim);
     }
+    */
     function compare2(d, change, val) {
         dataSet.dims = [d];
         if (change) {
@@ -433,15 +463,8 @@ treelike.browserUI = (function() {
         treelike.collapsibleTree.root = dataSet.rootVal;
         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
         bu.update();
-        var buttons = d3.select('#' + d).selectAll('li.label')
-        buttons
-            .classed('from', function(val) { 
-                return val === compareSettings.from })
-            .classed('to', function(val) { 
-                return val === compareSettings.to })
-            .on('click',compareLabelClick)
-            .on('mouseover',compareLabelMouseover)
     }
+    /*
     function compareLabelMouseover(val, i) {
         var dim = val.dim;
         var tt, filt;
@@ -458,6 +481,7 @@ treelike.browserUI = (function() {
         }
         treelike.tooltip.showTooltip(tt);
     }
+    */
     function dimControlSortKey(d) { 
         var idx = dataSet.dims.indexOf(d);
         return (idx > -1) ? idx : dataSet.allDims.indexOf(d) 

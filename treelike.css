@@ -268,12 +268,12 @@ ul.filter-list {
     ul.filter-list li.to {
       background-color: #4444ff !important; }
     /* line 151, treelike.scss */
-    ul.filter-list li.label-inverse {
+    ul.filter-list li.label-filtered {
       color: #333;
       background-color: #eee;
       opacity: 0.5; }
       /* line 155, treelike.scss */
-      ul.filter-list li.label-inverse:hover {
+      ul.filter-list li.label-filtered:hover {
         color: #fff;
         background-color: #333;
         opacity: 1 !important; }
