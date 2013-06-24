@@ -11,6 +11,7 @@ treelike.DataSet.prototype.dataPrep = function(data) {
     var that = this;
     this.dims = [];
     this.data = data;
+    this.compareSettings = {};
     this.allDims = _(data[0]).keys();
     this.allDims = _(this.allDims).map(function(d) {
         if (d.match(/[^a-zA-Z_\-0-9]/)) {
@@ -57,10 +58,12 @@ treelike.DataSet.prototype.refreshRoot = function(opts) {
     delete this.rootVal._children;
     delete this.rootVal.childLinks;
     opts = opts || {};
-    _.each(this.dims, function(d) {
-        opts.excludeValues = treelike.browserUI.filteredValues(d);
-        that.rootVal.extendGroupBy(d, opts);
-    });
+    _.each(this.dims
+            .slice(this.compareSettings.dim ? 1 : 0), 
+            function(d) {
+                opts.excludeValues = treelike.browserUI.filteredValues(d);
+                that.rootVal.extendGroupBy(d, opts);
+            });
 };
 treelike.DataSet.prototype.dimPos = function(dim) {
     var that = this;
@@ -87,8 +90,7 @@ treelike.DataSet.prototype.dimPos = function(dim) {
     return pos;
 }
 treelike.browserUI = (function() {
-    var bu = {}, dataSet, navBar, valueFilters = {}, 
-        compareSettings = {};
+    var bu = {}, dataSet, navBar, valueFilters = {};
     bu.init = function(o) {
         dataSet = o;
         dataSet.rootVal = dataSet.emptyRoot();
@@ -281,13 +283,13 @@ treelike.browserUI = (function() {
                     var dim = val.dim;
                     return (valueFilters[dim] && valueFilters[dim][val]);
                 })
-        if (compareSettings.dim) {
+        if (dataSet.compareSettings.dim) {
             var buttons = footer.select('ul.filter-list').selectAll('li.label')
             buttons
                 .classed('from', function(val) { 
-                    return val === compareSettings.from })
+                    return val === dataSet.compareSettings.from })
                 .classed('to', function(val) { 
-                    return val === compareSettings.to })
+                    return val === dataSet.compareSettings.to })
                 .on('click',labelClick)
                 .on('mouseover',labelMouseover)
         }
@@ -370,10 +372,10 @@ treelike.browserUI = (function() {
     }
     function labelClick(val, i) {
         var dim = val.dim;
-        if (compareSettings.dim) {
+        if (dataSet.compareSettings.dim && dataSet.compareSettings.dim === dim) {
             var dim = val.dim;
             var change = compareRequest(val, i, this);
-            compareSettings[change + 'Idx'] = i;
+            dataSet.compareSettings[change + 'Idx'] = i;
             compare2(dim, change, val);
             filterDimension(dim);
         } else {
@@ -390,12 +392,12 @@ treelike.browserUI = (function() {
     function labelMouseover(val, i) {
         var dim = val.dim;
         var tt, filt;
-        if (compareSettings.dim && compareSettings.dim === dim) {
+        if (dataSet.compareSettings.dim && dataSet.compareSettings.dim === dim) {
             var change = compareRequest(val, i, this);
             if (change === 'from') {
-                tt = 'Compare ' + val + ' and ' + compareSettings.to;
+                tt = 'Compare ' + val + ' and ' + dataSet.compareSettings.to;
             } else if (change === 'to') {
-                tt = 'Compare ' + compareSettings.from + ' and ' + val;
+                tt = 'Compare ' + dataSet.compareSettings.from + ' and ' + val;
             } else {
                 return;
             }
@@ -416,15 +418,13 @@ treelike.browserUI = (function() {
         }
         treelike.tooltip.showTooltip(tt);
     }
-    bu.compareSettings = function() { return compareSettings };
-    bu.compareSettingsReset = function() { compareSettings = {} };
     function compareRequest(val, i, node) {
-        if (i < compareSettings.fromIdx) {
+        if (i < dataSet.compareSettings.fromIdx) {
             return 'from';
-        } else if (i > compareSettings.toIdx) {
+        } else if (i > dataSet.compareSettings.toIdx) {
             return 'to';
-        } else if (i === compareSettings.fromIdx) {
-        } else if (i === compareSettings.toIdx) {
+        } else if (i === dataSet.compareSettings.fromIdx) {
+        } else if (i === dataSet.compareSettings.toIdx) {
         } else {
             var jqTarget = $(node);
             var xPct = d3.event.offsetX / node.clientWidth;
@@ -436,7 +436,7 @@ treelike.browserUI = (function() {
     function compareLabelClick(val, i) {
         var dim = val.dim;
         var change = compareRequest(val, i, this);
-        compareSettings[change + 'Idx'] = i;
+        dataSet.compareSettings[change + 'Idx'] = i;
         compare2(dim, change, val);
         filterDimension(dim);
     }
@@ -444,21 +444,21 @@ treelike.browserUI = (function() {
     function compare2(d, change, val) {
         dataSet.dims = [d];
         if (change) {
-            toggleValue(d, compareSettings[change]);
-            compareSettings[change] = val;
+            toggleValue(d, dataSet.compareSettings[change]);
+            dataSet.compareSettings[change] = val;
             toggleValue(d, val);
         } else {
-            compareSettings.dim = d;
+            dataSet.compareSettings.dim = d;
             var ufv = unfilteredValues(d);
-            compareSettings.from = ufv[0];
-            compareSettings.fromIdx = 0;
-            compareSettings.to = _(ufv).last();
-            compareSettings.toIdx = _.indexOf(dataSet.dimGroups[d], compareSettings.to);
-            toggleValue(d, compareSettings.from);
-            toggleValue(d, compareSettings.to);
+            dataSet.compareSettings.from = ufv[0];
+            dataSet.compareSettings.fromIdx = 0;
+            dataSet.compareSettings.to = _(ufv).last();
+            dataSet.compareSettings.toIdx = _.indexOf(dataSet.dimGroups[d], dataSet.compareSettings.to);
+            toggleValue(d, dataSet.compareSettings.from);
+            toggleValue(d, dataSet.compareSettings.to);
         }
-        var from = enlightenedData.group(dataSet.data, d)[compareSettings.fromIdx];
-        var to = enlightenedData.group(dataSet.data, d)[compareSettings.toIdx];
+        var from = enlightenedData.group(dataSet.data, d)[dataSet.compareSettings.fromIdx];
+        var to = enlightenedData.group(dataSet.data, d)[dataSet.compareSettings.toIdx];
         dataSet.rootVal = enlightenedData.compareValue(from, to);
         treelike.collapsibleTree.root = dataSet.rootVal;
         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
@@ -468,14 +468,14 @@ treelike.browserUI = (function() {
     function compareLabelMouseover(val, i) {
         var dim = val.dim;
         var tt, filt;
-        if (compareSettings.dim !== dim) {
-            throw new Error("compareSettings messed up");
+        if (dataSet.compareSettings.dim !== dim) {
+            throw new Error("dataSet.compareSettings messed up");
         }
         var change = compareRequest(val, i, this);
         if (change === 'from') {
-            tt = 'Compare ' + val + ' and ' + compareSettings.to;
+            tt = 'Compare ' + val + ' and ' + dataSet.compareSettings.to;
         } else if (change === 'to') {
-            tt = 'Compare ' + compareSettings.from + ' and ' + val;
+            tt = 'Compare ' + dataSet.compareSettings.from + ' and ' + val;
         } else {
             return;
         }
@@ -590,7 +590,6 @@ treelike.collapsibleTree = (function($, d3) {
             .projection(function(d) { return [d.y, d.x]; });
         // hide all children except first level
         //root.children.forEach(toggleAll);
-        ct.update(root);
     };
     ct.update = function(source, drawFromScratch) {
         if (!tree) {
@@ -732,7 +731,7 @@ treelike.collapsibleTree = (function($, d3) {
         facts['dim path'] = d.dimPath();
         facts['val path'] = d.namePath();
         var dimVals;
-        var cs = treelike.browserUI.compareSettings();
+        var cs = dataSet.compareSettings();
         dimVals = _(dataSet.allDims).map(function(dim) {
             var g;
             if (cs.dim) {
