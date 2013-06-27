@@ -1,5 +1,11 @@
 'use strict';
 
+var ts = new Date();
+function console_log(msg) {
+    var nd = new Date();
+    console.log(msg + ': ' + (nd - ts))
+    ts = nd;
+}
 var treelike = (function($) {
     var treelike = {};
     return treelike;
@@ -101,7 +107,8 @@ treelike.browserUI = (function() {
                             return _(p[1]).map(function(d){return p[0]+':'+d})
                         })
                         .flatten(true).value();
-            false && $('.search-box input[type=text]').typeahead({
+            /*
+            $('.search-box input[type=text]').typeahead({
                 source: dimVals,
                 items: 100,
                 minLength: 2,
@@ -125,16 +132,17 @@ treelike.browserUI = (function() {
                         _(vals).each(function(d) {
                             toggleValue(dim, d);
                         });
-                        /*
+                        / *
                         $(that.$element[0].parentElement).append(
                             '<button>Show only ' + vals.length + ' ' + dim + ' values' + '</button>'
                             );
-                         */
+                         * /
                     });
                     bu.update();
                     return this.query 
                 },
             });
+            */
         })();
     };
     bu.update = function() {
@@ -157,7 +165,7 @@ treelike.browserUI = (function() {
         });
         */
     };
-    function sparkBars(node, arr, width, height, color) {
+    function sparkBars(node, arr, width, height, color, dim, val) {
         var x = d3.scale.linear()
                 .domain([0, arr.length])
                 .range([0, width]);
@@ -182,7 +190,17 @@ treelike.browserUI = (function() {
             .attr('y', function(d) { return height - y(d) })
             .attr('height', function(d) { return y(d) })
             .attr('width', barWidth)
-            ;
+            /*  BARHIGHLIGHT
+            .each(function(d, i) {
+                val[i].legendBar = this;
+                / *
+                var bar = d3.select(this);
+                _.chain(attrvals[i]).pairs().each(function(p) {
+                    bar.attr(p[0], p[1])
+                });
+                * /
+            })
+            */
         return svg;
     }
     function updateDims(selector, data, align) {
@@ -208,7 +226,12 @@ treelike.browserUI = (function() {
                             dataSet.spliceDim(d, {fromList:true});
                         }
                     })
-                    .append('i').attr('class', ' icon-remove');
+                    .append('i').attr('class', ' icon-trash')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('discard ' + d + ' dimension')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+                ;
                 li.append('span').text(function(d) { return d });
                 li.append('div').attr('class','buttons');
                 var vals = dataSet.dimGroups[d];
@@ -217,7 +240,7 @@ treelike.browserUI = (function() {
                     (vals.length === 1 ? '' : 's') + ' ');
                 sparkBars( chart, 
                         _.chain(vals).pluck('records').pluck('length').value(),
-                        100, 20, '#777')
+                        100, 20, '#777', d, vals)
                     .on('mouseover', function(d) {
                         treelike.tooltip.showTooltip( //vals.rawValues().join(', '));
                             _(vals).map(function(d) {
@@ -234,6 +257,10 @@ treelike.browserUI = (function() {
                         filterDimension(dim);
                     })
                     .append('i').attr('class', 'icon-filter')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('filter ' + d + ' values')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
             });
         lis.classed('displayed-dim', function(d) {
             return dataSet.dims.indexOf(d) > -1;
@@ -268,6 +295,59 @@ treelike.browserUI = (function() {
         var footer = d3.select('div.gp-right div.gp-footer');
         footer.html('');
         footer.classed('filter-list', true);
+        var controls = footer.append('div').attr('class','controls row-fluid');
+        controls.append('button')
+            .text('sort')
+            .on('click', function() {
+                var labels = footer.select('ul').selectAll('li.label');
+                var first = labels[0][0];
+                if (typeof first === "undefined") {
+                    return;
+                }
+                if (typeof first.__data__.origPos === "undefined") {
+                    d3.select(this).text('original order')
+                    labels.each(function(d, i) {
+                        d.origPos = i;
+                    });
+                    labels.sort(function(a,b) {
+                        return d3.ascending(a.toString(), b.toString())
+                    })
+                } else {
+                    d3.select(this).text('sort')
+                    labels.sort(function(a,b) {
+                        return a.origPos - b.origPos;
+                    })
+                    labels.each(function(d) {
+                        delete d.origPos;
+                    })
+                }
+            })
+        var form = controls.append('div').attr('class','search-box')
+            .append('form');
+        var search = form.append('input').attr('type','text').attr('size', '30');
+        form.append('input').attr('type','submit').attr('value', 'Filter')
+            .attr('onclick', 'return false');
+        $(search.node()).typeahead({
+                source: dataSet.dimGroups[dim].rawValues(),
+                items: 100,
+                minLength: 2,
+                updater: function(item) { 
+                    valueFilters[dim] = {};  // purging all filtered values!!!!
+                    var that = this;
+                    _.chain(this.options.source)
+                        .filter(function(d) { return that.matcher(d) })
+                        .each(function(d) {
+                            toggleValue(dim, d);
+                        });
+                    if (_(dataSet.dims).contains(dim)) {
+                        dataSet.refreshRoot({excludeValues: filteredValues(dim), keepDim: true});
+                        treelike.collapsibleTree.root = dataSet.rootVal;
+                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+                    }
+                    bu.update();
+                    filterDimension(dim);
+                }
+            });
         footer.append('ul').attr('class','filter-list')
             .selectAll('li').data(dataSet.dimGroups[dim])
                 .enter()
@@ -312,10 +392,18 @@ treelike.browserUI = (function() {
                         bu.update();
                     })
                     .append('i').attr('class', 'icon-plus')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('add ' + d + ' to tree')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
                     ;
                 ul.append('button').attr('class','btn btn-mini')
                     .on('click', compare2)
-                    .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>');
+                    .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('compare 2 ' + d + ' values')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
             } else {
                 ul.append('button').attr('class','btn btn-mini')
                     .on('click', compare2)
@@ -327,7 +415,11 @@ treelike.browserUI = (function() {
                         treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
                         bu.update();
                     })
-                    .append('i').attr('class', 'icon-minus');
+                    .append('i').attr('class', 'icon-minus')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('remove ' + d + ' from tree')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
                 d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
                     /*
                     .text(function(d) {
@@ -342,13 +434,25 @@ treelike.browserUI = (function() {
                         treelike.collapsibleTree.toggleMerge(d+'');
                         bu.update();
                     })
-                    .append('i').attr('class', ' icon-random');
+                    .append('i').attr('class', ' icon-random')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('toggle merging of ' + d + ' values')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
                 ul.append('button').attr('class','btn btn-mini')
                     .on('click', function(dim) { makeWider(dim); })
-                    .append('i').attr('class', ' icon-resize-full');
+                    .append('i').attr('class', ' icon-resize-full')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('move ' + d + ' right')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
                 ul.append('button').attr('class','btn btn-mini')
                     .on('click', function(dim) { makeNarrower(dim); })
-                    .append('i').attr('class', ' icon-resize-small');
+                    .append('i').attr('class', ' icon-resize-small')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('move ' + d + ' left')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
             }
             ul.each(function(d) {
                 if (filteredValues(d).length) {
@@ -633,13 +737,16 @@ treelike.collapsibleTree = (function($, d3) {
             .on("click", function(d) { 
                 toggle(d); ct.update(d); })
             .on("mouseover", function(d) { 
+                console_log(d + 'highlight ');
                 highlightRelated(this, d, true);
-                legendReport(this, d);
+                //legendReport(this, d); // BARHIGHLIGHT
             })
             .on("mouseout", function(d) { 
                 highlightRelated(this, d, false);
+                /* BARHIGLIGHT
+                $('rect.bar').attr('fill','#777')
+                */
             })
-            ;
 
         nodeEnter.append("svg:circle")
             .attr("r", 1e-6)
@@ -722,16 +829,10 @@ treelike.collapsibleTree = (function($, d3) {
 
         transition(duration);
     }
+    /* restore by uncommenting BARHIGHLIGHT
     function legendReport(node, d) {
-        var l = d3.select('div.legend');
-        var dl = l.selectAll('dl').data([d]);
-        dl.exit().remove();
-        dl.enter().append('dl').attr('class', 'dl-horizontal');
-        var facts = {};
-        facts['dim path'] = d.dimPath();
-        facts['val path'] = d.namePath();
         var dimVals;
-        var cs = dataSet.compareSettings();
+        var cs = dataSet.compareSettings;
         dimVals = _(dataSet.allDims).map(function(dim) {
             var g;
             if (cs.dim) {
@@ -744,6 +845,25 @@ treelike.collapsibleTree = (function($, d3) {
             }
             return g;
         });
+        console_log(d + 'bar color ');
+        _(dimVals).each(function(list) {
+            _(list).each(function(val) {
+                d3.select( dataSet.dimGroups[list.dim]
+                    .lookup(val.toString()).legendBar)
+                    .attr('fill','blue')
+            });
+        });
+        console_log(d + 'done highlighting ');
+        return;
+        var footer = d3.select('div.gp-right div.gp-footer');
+        footer.html('');
+        footer.classed('filter-list', true);
+        var dl = footer.selectAll('dl').data([d]);
+        dl.exit().remove();
+        dl.enter().append('dl').attr('class', 'dl-horizontal');
+        var facts = {};
+        facts['dim path'] = d.dimPath();
+        facts['val path'] = d.namePath();
         var maxVals = _.chain(dimVals).values()
                             .map(function(d){return d.length})
                             .max().value();
@@ -777,6 +897,7 @@ treelike.collapsibleTree = (function($, d3) {
                     return '<dt>' + pair[0] + '</dt><dd>' + pair[1] + '</dd>';
                 }).join('\n').value());
     }
+    */
     function makeBar(width, color) {
         return $('<div></div>')
             .css('background-color', color)

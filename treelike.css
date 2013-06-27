@@ -212,29 +212,16 @@ button {
   bottom: 0;
   line-height: 50px; }
 
-/* line 96, treelike.scss */
-[class^="icon-"], [class*=" icon-"] {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-top: 1px;
-  *margin-right: .3em;
-  line-height: 14px;
-  vertical-align: text-top;
-  background-image: url("./lib/bootstrap/img/glyphicons-halflings.png");
-  background-position: 14px 14px;
-  background-repeat: no-repeat; }
-
-/* line 109, treelike.scss */
+/* line 97, treelike.scss */
 div.filter-list {
   line-height: 14px !important;
   height: auto !important; }
 
-/* line 113, treelike.scss */
+/* line 101, treelike.scss */
 ul.filter-list {
   margin-left: 0;
   list-style: none; }
-  /* line 116, treelike.scss */
+  /* line 104, treelike.scss */
   ul.filter-list li {
     margin: 1px;
     cursor: pointer;
@@ -256,634 +243,27 @@ ul.filter-list {
     white-space: nowrap;
     vertical-align: baseline;
     list-style: none; }
-    /* line 140, treelike.scss */
+    /* line 128, treelike.scss */
     ul.filter-list li:hover {
       background-color: #eee;
       color: #333;
       opacity: 1 !important; }
-    /* line 145, treelike.scss */
+    /* line 133, treelike.scss */
     ul.filter-list li.from {
       background-color: #996666 !important; }
-    /* line 148, treelike.scss */
+    /* line 136, treelike.scss */
     ul.filter-list li.to {
       background-color: #4444ff !important; }
-    /* line 151, treelike.scss */
+    /* line 139, treelike.scss */
     ul.filter-list li.label-filtered {
       color: #333;
       background-color: #eee;
       opacity: 0.5; }
-      /* line 155, treelike.scss */
+      /* line 143, treelike.scss */
       ul.filter-list li.label-filtered:hover {
         color: #fff;
         background-color: #333;
         opacity: 1 !important; }
-
-/* line 164, treelike.scss */
-.icon-glass {
-  background-position: 0      0; }
-
-/* line 168, treelike.scss */
-.icon-music {
-  background-position: -24px 0; }
-
-/* line 172, treelike.scss */
-.icon-search {
-  background-position: -48px 0; }
-
-/* line 176, treelike.scss */
-.icon-envelope {
-  background-position: -72px 0; }
-
-/* line 180, treelike.scss */
-.icon-heart {
-  background-position: -96px 0; }
-
-/* line 184, treelike.scss */
-.icon-star {
-  background-position: -120px 0; }
-
-/* line 188, treelike.scss */
-.icon-star-empty {
-  background-position: -144px 0; }
-
-/* line 192, treelike.scss */
-.icon-user {
-  background-position: -168px 0; }
-
-/* line 196, treelike.scss */
-.icon-film {
-  background-position: -192px 0; }
-
-/* line 200, treelike.scss */
-.icon-th-large {
-  background-position: -216px 0; }
-
-/* line 204, treelike.scss */
-.icon-th {
-  background-position: -240px 0; }
-
-/* line 208, treelike.scss */
-.icon-th-list {
-  background-position: -264px 0; }
-
-/* line 212, treelike.scss */
-.icon-ok {
-  background-position: -288px 0; }
-
-/* line 216, treelike.scss */
-.icon-remove {
-  background-position: -312px 0; }
-
-/* line 220, treelike.scss */
-.icon-zoom-in {
-  background-position: -336px 0; }
-
-/* line 224, treelike.scss */
-.icon-zoom-out {
-  background-position: -360px 0; }
-
-/* line 228, treelike.scss */
-.icon-off {
-  background-position: -384px 0; }
-
-/* line 232, treelike.scss */
-.icon-signal {
-  background-position: -408px 0; }
-
-/* line 236, treelike.scss */
-.icon-cog {
-  background-position: -432px 0; }
-
-/* line 240, treelike.scss */
-.icon-trash {
-  background-position: -456px 0; }
-
-/* line 244, treelike.scss */
-.icon-home {
-  background-position: 0 -24px; }
-
-/* line 248, treelike.scss */
-.icon-file {
-  background-position: -24px -24px; }
-
-/* line 252, treelike.scss */
-.icon-time {
-  background-position: -48px -24px; }
-
-/* line 256, treelike.scss */
-.icon-road {
-  background-position: -72px -24px; }
-
-/* line 260, treelike.scss */
-.icon-download-alt {
-  background-position: -96px -24px; }
-
-/* line 264, treelike.scss */
-.icon-download {
-  background-position: -120px -24px; }
-
-/* line 268, treelike.scss */
-.icon-upload {
-  background-position: -144px -24px; }
-
-/* line 272, treelike.scss */
-.icon-inbox {
-  background-position: -168px -24px; }
-
-/* line 276, treelike.scss */
-.icon-play-circle {
-  background-position: -192px -24px; }
-
-/* line 280, treelike.scss */
-.icon-repeat {
-  background-position: -216px -24px; }
-
-/* line 284, treelike.scss */
-.icon-refresh {
-  background-position: -240px -24px; }
-
-/* line 288, treelike.scss */
-.icon-list-alt {
-  background-position: -264px -24px; }
-
-/* line 292, treelike.scss */
-.icon-lock {
-  background-position: -287px -24px; }
-
-/* line 296, treelike.scss */
-.icon-flag {
-  background-position: -312px -24px; }
-
-/* line 300, treelike.scss */
-.icon-headphones {
-  background-position: -336px -24px; }
-
-/* line 304, treelike.scss */
-.icon-volume-off {
-  background-position: -360px -24px; }
-
-/* line 308, treelike.scss */
-.icon-volume-down {
-  background-position: -384px -24px; }
-
-/* line 312, treelike.scss */
-.icon-volume-up {
-  background-position: -408px -24px; }
-
-/* line 316, treelike.scss */
-.icon-qrcode {
-  background-position: -432px -24px; }
-
-/* line 320, treelike.scss */
-.icon-barcode {
-  background-position: -456px -24px; }
-
-/* line 324, treelike.scss */
-.icon-tag {
-  background-position: 0 -48px; }
-
-/* line 328, treelike.scss */
-.icon-tags {
-  background-position: -25px -48px; }
-
-/* line 332, treelike.scss */
-.icon-book {
-  background-position: -48px -48px; }
-
-/* line 336, treelike.scss */
-.icon-bookmark {
-  background-position: -72px -48px; }
-
-/* line 340, treelike.scss */
-.icon-print {
-  background-position: -96px -48px; }
-
-/* line 344, treelike.scss */
-.icon-camera {
-  background-position: -120px -48px; }
-
-/* line 348, treelike.scss */
-.icon-font {
-  background-position: -144px -48px; }
-
-/* line 352, treelike.scss */
-.icon-bold {
-  background-position: -167px -48px; }
-
-/* line 356, treelike.scss */
-.icon-italic {
-  background-position: -192px -48px; }
-
-/* line 360, treelike.scss */
-.icon-text-height {
-  background-position: -216px -48px; }
-
-/* line 364, treelike.scss */
-.icon-text-width {
-  background-position: -240px -48px; }
-
-/* line 368, treelike.scss */
-.icon-align-left {
-  background-position: -264px -48px; }
-
-/* line 372, treelike.scss */
-.icon-align-center {
-  background-position: -288px -48px; }
-
-/* line 376, treelike.scss */
-.icon-align-right {
-  background-position: -312px -48px; }
-
-/* line 380, treelike.scss */
-.icon-align-justify {
-  background-position: -336px -48px; }
-
-/* line 384, treelike.scss */
-.icon-list {
-  background-position: -360px -48px; }
-
-/* line 388, treelike.scss */
-.icon-indent-left {
-  background-position: -384px -48px; }
-
-/* line 392, treelike.scss */
-.icon-indent-right {
-  background-position: -408px -48px; }
-
-/* line 396, treelike.scss */
-.icon-facetime-video {
-  background-position: -432px -48px; }
-
-/* line 400, treelike.scss */
-.icon-picture {
-  background-position: -456px -48px; }
-
-/* line 404, treelike.scss */
-.icon-pencil {
-  background-position: 0 -72px; }
-
-/* line 408, treelike.scss */
-.icon-map-marker {
-  background-position: -24px -72px; }
-
-/* line 412, treelike.scss */
-.icon-adjust {
-  background-position: -48px -72px; }
-
-/* line 416, treelike.scss */
-.icon-tint {
-  background-position: -72px -72px; }
-
-/* line 420, treelike.scss */
-.icon-edit {
-  background-position: -96px -72px; }
-
-/* line 424, treelike.scss */
-.icon-share {
-  background-position: -120px -72px; }
-
-/* line 428, treelike.scss */
-.icon-check {
-  background-position: -144px -72px; }
-
-/* line 432, treelike.scss */
-.icon-move {
-  background-position: -168px -72px; }
-
-/* line 436, treelike.scss */
-.icon-step-backward {
-  background-position: -192px -72px; }
-
-/* line 440, treelike.scss */
-.icon-fast-backward {
-  background-position: -216px -72px; }
-
-/* line 444, treelike.scss */
-.icon-backward {
-  background-position: -240px -72px; }
-
-/* line 448, treelike.scss */
-.icon-play {
-  background-position: -264px -72px; }
-
-/* line 452, treelike.scss */
-.icon-pause {
-  background-position: -288px -72px; }
-
-/* line 456, treelike.scss */
-.icon-stop {
-  background-position: -312px -72px; }
-
-/* line 460, treelike.scss */
-.icon-forward {
-  background-position: -336px -72px; }
-
-/* line 464, treelike.scss */
-.icon-fast-forward {
-  background-position: -360px -72px; }
-
-/* line 468, treelike.scss */
-.icon-step-forward {
-  background-position: -384px -72px; }
-
-/* line 472, treelike.scss */
-.icon-eject {
-  background-position: -408px -72px; }
-
-/* line 476, treelike.scss */
-.icon-chevron-left {
-  background-position: -432px -72px; }
-
-/* line 480, treelike.scss */
-.icon-chevron-right {
-  background-position: -456px -72px; }
-
-/* line 484, treelike.scss */
-.icon-plus-sign {
-  background-position: 0 -96px; }
-
-/* line 488, treelike.scss */
-.icon-minus-sign {
-  background-position: -24px -96px; }
-
-/* line 492, treelike.scss */
-.icon-remove-sign {
-  background-position: -48px -96px; }
-
-/* line 496, treelike.scss */
-.icon-ok-sign {
-  background-position: -72px -96px; }
-
-/* line 500, treelike.scss */
-.icon-question-sign {
-  background-position: -96px -96px; }
-
-/* line 504, treelike.scss */
-.icon-info-sign {
-  background-position: -120px -96px; }
-
-/* line 508, treelike.scss */
-.icon-screenshot {
-  background-position: -144px -96px; }
-
-/* line 512, treelike.scss */
-.icon-remove-circle {
-  background-position: -168px -96px; }
-
-/* line 516, treelike.scss */
-.icon-ok-circle {
-  background-position: -192px -96px; }
-
-/* line 520, treelike.scss */
-.icon-ban-circle {
-  background-position: -216px -96px; }
-
-/* line 524, treelike.scss */
-.icon-arrow-left {
-  background-position: -240px -96px; }
-
-/* line 528, treelike.scss */
-.icon-arrow-right {
-  background-position: -264px -96px; }
-
-/* line 532, treelike.scss */
-.icon-arrow-up {
-  background-position: -289px -96px; }
-
-/* line 536, treelike.scss */
-.icon-arrow-down {
-  background-position: -312px -96px; }
-
-/* line 540, treelike.scss */
-.icon-share-alt {
-  background-position: -336px -96px; }
-
-/* line 544, treelike.scss */
-.icon-resize-full {
-  background-position: -360px -96px; }
-
-/* line 548, treelike.scss */
-.icon-resize-small {
-  background-position: -384px -96px; }
-
-/* line 552, treelike.scss */
-.icon-plus {
-  background-position: -408px -96px; }
-
-/* line 556, treelike.scss */
-.icon-minus {
-  background-position: -433px -96px; }
-
-/* line 560, treelike.scss */
-.icon-asterisk {
-  background-position: -456px -96px; }
-
-/* line 564, treelike.scss */
-.icon-exclamation-sign {
-  background-position: 0 -120px; }
-
-/* line 568, treelike.scss */
-.icon-gift {
-  background-position: -24px -120px; }
-
-/* line 572, treelike.scss */
-.icon-leaf {
-  background-position: -48px -120px; }
-
-/* line 576, treelike.scss */
-.icon-fire {
-  background-position: -72px -120px; }
-
-/* line 580, treelike.scss */
-.icon-eye-open {
-  background-position: -96px -120px; }
-
-/* line 584, treelike.scss */
-.icon-eye-close {
-  background-position: -120px -120px; }
-
-/* line 588, treelike.scss */
-.icon-warning-sign {
-  background-position: -144px -120px; }
-
-/* line 592, treelike.scss */
-.icon-plane {
-  background-position: -168px -120px; }
-
-/* line 596, treelike.scss */
-.icon-calendar {
-  background-position: -192px -120px; }
-
-/* line 600, treelike.scss */
-.icon-random {
-  width: 16px;
-  background-position: -216px -120px; }
-
-/* line 605, treelike.scss */
-.icon-comment {
-  background-position: -240px -120px; }
-
-/* line 609, treelike.scss */
-.icon-magnet {
-  background-position: -264px -120px; }
-
-/* line 613, treelike.scss */
-.icon-chevron-up {
-  background-position: -288px -120px; }
-
-/* line 617, treelike.scss */
-.icon-chevron-down {
-  background-position: -313px -119px; }
-
-/* line 621, treelike.scss */
-.icon-retweet {
-  background-position: -336px -120px; }
-
-/* line 625, treelike.scss */
-.icon-shopping-cart {
-  background-position: -360px -120px; }
-
-/* line 629, treelike.scss */
-.icon-folder-close {
-  width: 16px;
-  background-position: -384px -120px; }
-
-/* line 634, treelike.scss */
-.icon-folder-open {
-  width: 16px;
-  background-position: -408px -120px; }
-
-/* line 639, treelike.scss */
-.icon-resize-vertical {
-  background-position: -432px -119px; }
-
-/* line 643, treelike.scss */
-.icon-resize-horizontal {
-  background-position: -456px -118px; }
-
-/* line 647, treelike.scss */
-.icon-hdd {
-  background-position: 0 -144px; }
-
-/* line 651, treelike.scss */
-.icon-bullhorn {
-  background-position: -24px -144px; }
-
-/* line 655, treelike.scss */
-.icon-bell {
-  background-position: -48px -144px; }
-
-/* line 659, treelike.scss */
-.icon-certificate {
-  background-position: -72px -144px; }
-
-/* line 663, treelike.scss */
-.icon-thumbs-up {
-  background-position: -96px -144px; }
-
-/* line 667, treelike.scss */
-.icon-thumbs-down {
-  background-position: -120px -144px; }
-
-/* line 671, treelike.scss */
-.icon-hand-right {
-  background-position: -144px -144px; }
-
-/* line 675, treelike.scss */
-.icon-hand-left {
-  background-position: -168px -144px; }
-
-/* line 679, treelike.scss */
-.icon-hand-up {
-  background-position: -192px -144px; }
-
-/* line 683, treelike.scss */
-.icon-hand-down {
-  background-position: -216px -144px; }
-
-/* line 687, treelike.scss */
-.icon-circle-arrow-right {
-  background-position: -240px -144px; }
-
-/* line 691, treelike.scss */
-.icon-circle-arrow-left {
-  background-position: -264px -144px; }
-
-/* line 695, treelike.scss */
-.icon-circle-arrow-up {
-  background-position: -288px -144px; }
-
-/* line 699, treelike.scss */
-.icon-circle-arrow-down {
-  background-position: -312px -144px; }
-
-/* line 703, treelike.scss */
-.icon-globe {
-  background-position: -336px -144px; }
-
-/* line 707, treelike.scss */
-.icon-wrench {
-  background-position: -360px -144px; }
-
-/* line 711, treelike.scss */
-.icon-tasks {
-  background-position: -384px -144px; }
-
-/* line 715, treelike.scss */
-.icon-filter {
-  background-position: -408px -144px; }
-
-/* line 719, treelike.scss */
-.icon-briefcase {
-  background-position: -432px -144px; }
-
-/* line 723, treelike.scss */
-.icon-fullscreen {
-  background-position: -456px -144px; }
-
-/* line 726, treelike.scss */
-.btn {
-  display: inline-block;
-  *display: inline;
-  padding: 4px 12px;
-  *margin-left: .3em;
-  font-size: 14px;
-  line-height: 20px;
-  color: #333333;
-  text-align: center;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
-  vertical-align: middle;
-  cursor: pointer;
-  background-color: #f5f5f5;
-  *background-color: #e6e6e6;
-  background-image: -moz-linear-gradient(top, white, #e6e6e6);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(white), to(#e6e6e6));
-  background-image: -webkit-linear-gradient(top, white, #e6e6e6);
-  background-image: -o-linear-gradient(top, white, #e6e6e6);
-  background-image: linear-gradient(to bottom, #ffffff, #e6e6e6);
-  background-repeat: repeat-x;
-  border: 1px solid #cccccc;
-  *border: 0;
-  border-color: #e6e6e6 #e6e6e6 #bfbfbf;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  border-bottom-color: #b3b3b3;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffe6e6e6', GradientType=0);
-  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
-  *zoom: 1;
-  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-  -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05); }
-
-/* line 762, treelike.scss */
-.btn-mini {
-  padding: 0 6px;
-  font-size: 10.5px;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px; }
 
 /*
 body {
@@ -895,61 +275,61 @@ body {
     left:0;
 }
 */
-/* line 780, treelike.scss */
+/* line 161, treelike.scss */
 #footer {
   position: absolute;
   bottom: 0px;
   width: 100%; }
 
-/* line 786, treelike.scss */
+/* line 167, treelike.scss */
 path.link {
   fill: none;
   stroke: #aaaa44;
   stroke-width: 1px; }
-  /* line 790, treelike.scss */
+  /* line 171, treelike.scss */
   path.link.from-version {
     stroke: #996666; }
-  /* line 793, treelike.scss */
+  /* line 174, treelike.scss */
   path.link.to-version {
     stroke: #4444ff; }
 
-/* line 798, treelike.scss */
+/* line 179, treelike.scss */
 .clear {
   clear: both; }
 
-/* line 801, treelike.scss */
+/* line 182, treelike.scss */
 .group:after {
   content: "";
   display: table;
   clear: both; }
 
-/* line 806, treelike.scss */
+/* line 187, treelike.scss */
 div.pie {
   float: left;
   text-align: center;
   border-radius: 5px; }
 
-/* line 811, treelike.scss */
+/* line 192, treelike.scss */
 .dimension-dragger {
   background: orange;
   font-weight: bold;
   width: 100%;
   height: 100%; }
 
-/* line 817, treelike.scss */
+/* line 198, treelike.scss */
 .dimension-receptacle {
   min-width: 40px;
   min-height: 20px;
   border: 2px dashed purple;
   text-align: center; }
 
-/* line 824, treelike.scss */
+/* line 205, treelike.scss */
 .node circle {
   cursor: pointer;
   fill: #fff;
   stroke: steelblue;
   stroke-width: 1.5px; }
 
-/* line 831, treelike.scss */
+/* line 212, treelike.scss */
 .node text {
   font-size: 11px; }
