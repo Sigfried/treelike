@@ -897,7 +897,6 @@ treelike.collapsibleTree = (function($, d3) {
                     return '<dt>' + pair[0] + '</dt><dd>' + pair[1] + '</dd>';
                 }).join('\n').value());
     }
-    */
     function makeBar(width, color) {
         return $('<div></div>')
             .css('background-color', color)
@@ -905,6 +904,7 @@ treelike.collapsibleTree = (function($, d3) {
             .width(width)
             .height('1em')[0].outerHTML;
     }
+    */
     function nodeHighlight(node) {
         if (_(node.__data__).has('mergeWith')) {
             node = node.__data__.mergeWith.gNode;
