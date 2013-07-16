@@ -204,9 +204,15 @@ div.pie {
 
 .node circle {
     cursor: pointer;
-    fill: #fff;
+    fill: #ddd;
     stroke: steelblue;
-    stroke-width: 1.5px;
+    //stroke-width: 1.5px;
+}
+.node path {
+    cursor: pointer;
+    fill: lightsteelblue;
+    stroke: steelblue;
+    //stroke-width: 1.5px;
 }
 
 .node text {

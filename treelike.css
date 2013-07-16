@@ -326,10 +326,15 @@ div.pie {
 /* line 205, treelike.scss */
 .node circle {
   cursor: pointer;
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px; }
+  fill: #ddd;
+  stroke: steelblue; }
 
-/* line 212, treelike.scss */
+/* line 211, treelike.scss */
+.node path {
+  cursor: pointer;
+  fill: lightsteelblue;
+  stroke: steelblue; }
+
+/* line 218, treelike.scss */
 .node text {
   font-size: 11px; }

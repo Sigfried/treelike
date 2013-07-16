@@ -748,10 +748,13 @@ treelike.collapsibleTree = (function($, d3) {
                 */
             })
 
+        var radius = 8;
         nodeEnter.append("svg:circle")
-            .attr("r", 1e-6)
-            .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
+            //.attr("r", 1e-6)      FIX WHEN DONE WITH PIE STUFF
+            .attr("r", radius)
+            //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
             ;
+
 
         nodeEnter.append("svg:text")
             .attr("x", function(d) { 
@@ -763,13 +766,25 @@ treelike.collapsibleTree = (function($, d3) {
             .style("fill-opacity", 1e-6);
 
         // Transition nodes to their new position.
-        var nodeUpdate = node.transition()
-            .duration(duration)
+        var nodeUpdate = node
+            //.transition().duration(duration)      FIX WHEN DONE WITH PIE STUFF
             .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
         nodeUpdate.select("circle")
-            .attr("r", 4.5)
-            .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+            //.attr("r", 4.5)
+            //.attr("r", function(d) { return .004 * d.records.length; })
+            //.style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; })
+
+        var arc = d3.svg.arc()
+            .startAngle(0)
+            .endAngle(function(d) { 
+                return  2 * Math.PI * d.records.length / 
+                    dataSet.data.length })
+            .innerRadius(function(d) { return 0; })
+            .outerRadius(function(d) { return radius });
+
+        nodeUpdate.append('path').attr('d', arc)
+            ;
 
         nodeUpdate.select("text")
             .style("fill-opacity", 1);
