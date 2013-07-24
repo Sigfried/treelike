@@ -365,9 +365,14 @@ treelike.browserUI = (function() {
                     var data = _.pluck(dataSet.data,d);
                     var domain = d3.extent(data);
                     var spread = domain[1] - domain[0];
+                    // algorithm from
+                    // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
+                    var bin_number = 3.5 * Math.sqrt(science.stats.variance(data))
+                                        * Math.pow(data.length, -1/3);
                     var w = 100, h = 20,
                         bins = d3.layout.histogram().frequency(true)
-                            .bins(d3.range(domain[0], domain[1], spread / 8))(data),
+                            .bins(bin_number)(data),
+                            //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
                         x = d3.scale.linear().domain(domain).range([0, w]),
                         max = d3.max(bins, function(d) { return d.length; }),
                         y = d3.scale.linear().domain([0, max]).range([0, h]);
