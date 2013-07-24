@@ -77,18 +77,28 @@ var enlightenedData = (function() {
                 delete g[d];
             });
         }
+        var isNumeric = undefined;
         var groups = _.map(_.pairs(g), function(pair) {
-            var S = new String(pair[0]);
+            var s = pair[0];
+            var S = new String(s);
             S.records = pair[1];
             S.dim = (opts && opts.dimName) ? opts.dimName : dim;
             S.parentList = g; // NOT TESTED, NOT USED, PROBABLY WRONG
             S.records.parentVal = S; // NOT TESTED, NOT USED, PROBABLY WRONG
             _.extend(S.__proto__, e.valMethods.prototype);
+            if (s.length && s.toLowerCase() !== "null") {
+                if (isNumeric === undefined)
+                    isNumeric = true;
+                if(isNaN(Number(s))) {
+                    isNumeric = false;
+                }
+            }
             return S;
         });
         groups.parentList = list; // NOT TESTED, NOT USED, PROBABLY WRONG
         groups.dim = (opts && opts.dimName) ? opts.dimName : dim;
         _.extend(groups.__proto__, e.group.prototype);
+        groups.isNumeric = isNumeric;
         return groups;
     }
     e.group.prototype.rawValues = function() {
