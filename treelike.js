@@ -146,9 +146,9 @@ treelike.browserUI = (function() {
         })();
     };
     bu.update = function() {
-        updateDims('div.unused-dims>ul', dataSet.allDims);
+        updateDims('div.dim-list>ul.displayed-dims', dataSet.dims);
+        updateDims('div.dim-list>ul.unused-dims', _.difference(dataSet.allDims, dataSet.dims));
         /*
-        updateDims('div.unused-dims>ul', _.difference(dataSet.allDims, dataSet.dims));
         //updateDims('div.displayed-dims', dataSet.dims, true);  not using now
         addButtons();
         // overriding bootstrap.js line 1820
@@ -207,7 +207,7 @@ treelike.browserUI = (function() {
         var maxValueCount = _.chain(dataSet.dimGroups)
             .values().pluck('length').max().value();
         var lis = d3.select(selector).selectAll('li')
-                    .data(data);
+                    .data(data, _.identity);
         lis.exit().remove();
         lis.enter().append('li')
             .attr('dim', function(d) { return d })
@@ -226,13 +226,18 @@ treelike.browserUI = (function() {
                             dataSet.spliceDim(d, {fromList:true});
                         }
                     })
-                    .append('i').attr('class', ' icon-trash')
+                    .append('i').attr('class', ' icon-remove')
                     .on('mouseover', function(d) {
                         treelike.tooltip.showTooltip('discard ' + d + ' dimension')
                     })
                     .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
                 ;
                 li.append('span').text(function(d) { return d });
+                var vals = dataSet.dimGroups[d];
+                li.append('span')
+                    .style('font-size', '70%')
+                    .style('font-weight', 'normal')
+                    .text(' ' + vals.length + ' val' + (vals.length === 1 ? '' : 's') + ' ');
                 li.append('div').attr('class','buttons');
                 var vals = dataSet.dimGroups[d];
                 var chart = li.append('div');
@@ -265,7 +270,182 @@ treelike.browserUI = (function() {
         lis.classed('displayed-dim', function(d) {
             return dataSet.dims.indexOf(d) > -1;
         });
-        addButtons();
+        //var uls = d3.selectAll('div.tab-content div.btn-group');
+        var uls = d3.selectAll('ul.dim-list div.buttons');
+        uls.each(function(d) {
+            var ul = d3.select(this);
+            ul.selectAll('button').remove();
+            if (dataSet.dims.indexOf(d) === -1) {
+                ul.append('button').attr('class','btn btn-mini')
+                    //.text('Show')
+                    .on('click', function(dim) {
+                        dataSet.dims.push(dim);
+                        var opts = {excludeValues: filteredValues(dim)};
+                        dataSet.rootVal.extendGroupBy(dim, opts);
+                        treelike.collapsibleTree.root = dataSet.rootVal;
+                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+                        bu.update();
+                    })
+                    .append('i').attr('class', 'icon-ok-circle')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('add ' + d + ' to tree')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+                    ;
+            } else {
+                ul.append('button').attr('class','btn btn-mini') // Remove
+                    .on('click', function(dimToRemove) {
+                        dataSet.spliceDim(dimToRemove);
+                        treelike.collapsibleTree.root = dataSet.rootVal;
+                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+                        bu.update();
+                    })
+                    .append('i').attr('class', 'icon-remove-circle')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('remove ' + d + ' from tree')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+                d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
+                    /*
+                    .text(function(d) {
+                        return treelike.collapsibleTree.mergedDims[d+''] ?
+                            'Separate' : 'Merge';
+                    })
+                    */
+                    .on('click', function(d) {
+                        //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
+                        //var merge = treelike.collapsibleTree.mergedDims[parentDim] = !  treelike.collapsibleTree.mergedDims[parentDim];
+                        //treelike.collapsibleTree.update();
+                        treelike.collapsibleTree.toggleMerge(d+'');
+                        bu.update();
+                    })
+                    .append('i').attr('class', ' icon-random')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('toggle merging of ' + d + ' values')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+                ul.append('button').attr('class','btn btn-mini')
+                    .on('click', function(dim) { makeWider(dim); })
+                    .append('i').attr('class', ' icon-resize-full')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('move ' + d + ' right')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+                ul.append('button').attr('class','btn btn-mini')
+                    .on('click', function(dim) { makeNarrower(dim); })
+                    .append('i').attr('class', ' icon-resize-small')
+                    .on('mouseover', function(d) {
+                        treelike.tooltip.showTooltip('move ' + d + ' left')
+                    })
+                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+            }
+            ul.append('button').attr('class','btn btn-mini') // show filters
+                .on('click', function(dim) {
+                    filterDimension(dim);
+                })
+                .append('i').attr('class', 'icon-filter')
+                .on('mouseover', function(d) {
+                    treelike.tooltip.showTooltip('filter ' + d + ' values')
+                })
+                .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+            ul.append('button').attr('class','btn btn-mini')
+                .on('click', compare2)
+                .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>')
+                .on('mouseover', function(d) {
+                    treelike.tooltip.showTooltip('compare 2 ' + d + ' values')
+                })
+                .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+            ul.filter(function(d) {
+                    var vals = dataSet.dimGroups[d];
+                    return vals.isNumeric;
+                })
+                .append('button')
+                .attr('class','btn btn-mini') // show filters
+                .on('click', function(d) {
+                    var data = _.pluck(dataSet.data,d);
+                    var domain = d3.extent(data);
+                    var spread = domain[1] - domain[0];
+                    var w = 100, h = 20,
+                        bins = d3.layout.histogram().frequency(true)
+                            .bins(d3.range(domain[0], domain[1], spread / 8))(data),
+                        x = d3.scale.linear().domain(domain).range([0, w]),
+                        max = d3.max(bins, function(d) { return d.length; }),
+                        y = d3.scale.linear().domain([0, max]).range([0, h]);
+                    //var kde = science.stats.kde().sample(data);
+                    //var bw = science.stats.bandwidth.nrd0(data);
+                    //kde.bandwidth(.00001);
+                    var line = d3.svg.line()
+                                .x(function(d) { return x(d[0]); })
+                                .y(function(d) { return h - y(d[1]); });
+
+                    var chart = d3.select(this.parentElement.parentElement)
+                                    .append('svg')
+                                        .attr('width',w)
+                                        .attr('height',h);
+                    var bars = chart.selectAll("g.bar")
+                                    .data(bins)
+                                .enter().append("g")
+                                    .attr("class", "bar")
+                                    .attr("transform", function(d, i) {
+                                        return "translate(" + x(d.x) + "," + (h - y(d.y)) + ")";
+                                    });
+
+                    bars.append("rect")
+                        .attr("fill", "steelblue")
+                        .attr("width", function(d) { return spread / 8  })
+                        .attr("height", function(d) { return y(d.y); });
+
+                    /*
+                    chart.selectAll("path")
+                        .data([science.stats.bandwidth.nrd0])
+                            .enter().append("path")
+                                .style('fill','none')
+                                .style('stroke','black')
+                                .style('stroke-width','1.5px')
+                            .attr("d", function(h) {
+                                return line( 
+                                    kde(d3.range(low, high, (high-low)/10)))
+                            });
+                    */
+                    d3.select(chart.node().parentElement)
+                        .append('p')
+                            .text('Mean: ')
+                        .append('span')
+                            .attr('class','stats')
+                    treelike.collapsibleTree.statsFilter(dataSet.data);
+                    return;
+                    var vals = dataSet.dimGroups[d];
+                    sparkBars( chart, 
+                            _.chain(vals).pluck('records').pluck('length').value(),
+                            100, 20, '#777', d, vals)
+                        .on('mouseover', function(d) {
+                            treelike.tooltip.showTooltip( //vals.rawValues().join(', '));
+                                _(vals).map(function(d) {
+                                    return d + ' (' + d.records.length + ' recs)'
+                                }).join('<br/>\n'), 
+                                    {'font-size': '11px', 'font-weight':'normal'}
+                                    );
+                        })
+                        .on('mouseout', function(d) {
+                            treelike.tooltip.hideTooltip();
+                        });
+                })
+                .append('i').attr('class', 'icon-info-sign')
+                .on('mouseover', function(d) {
+                    treelike.tooltip.showTooltip('show stats')
+                })
+                .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+            ul.each(function(d) {
+                if (filteredValues(d).length) {
+                    d3.select(this).append('button').attr('class','btn btn-mini')
+                        .text('Unhide values')
+                        .on('click', function(d) {
+                            delete valueFilters[d];
+                            bu.update();
+                        })
+                }
+            });
+        });
 
         return;
         var templ = _.template(
@@ -296,7 +476,13 @@ treelike.browserUI = (function() {
         footer.html('');
         footer.classed('filter-list', true);
         var controls = footer.append('div').attr('class','controls row-fluid');
+        controls.append('button').attr('class','btn btn-mini pull-right') // Remove
+                    .on('click', function(dimToRemove) {
+                        footer.selectAll('*').remove();
+                    })
+                    .append('i').attr('class', 'icon-remove')
         controls.append('button')
+            .attr('class', 'pull-right')
             .text('sort')
             .on('click', function() {
                 var labels = footer.select('ul').selectAll('li.label');
@@ -373,98 +559,6 @@ treelike.browserUI = (function() {
                 .on('click',labelClick)
                 .on('mouseover',labelMouseover)
         }
-    }
-    function addButtons() {
-        //var uls = d3.selectAll('div.tab-content div.btn-group');
-        var uls = d3.selectAll('ul.dim-list div.buttons');
-        uls.each(function(d) {
-            var ul = d3.select(this);
-            ul.selectAll('button').remove();
-            if (dataSet.dims.indexOf(d) === -1) {
-                ul.append('button').attr('class','btn btn-mini')
-                    //.text('Show')
-                    .on('click', function(dim) {
-                        dataSet.dims.push(dim);
-                        var opts = {excludeValues: filteredValues(dim)};
-                        dataSet.rootVal.extendGroupBy(dim, opts);
-                        treelike.collapsibleTree.root = dataSet.rootVal;
-                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
-                        bu.update();
-                    })
-                    .append('i').attr('class', 'icon-plus')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('add ' + d + ' to tree')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-                    ;
-                ul.append('button').attr('class','btn btn-mini')
-                    .on('click', compare2)
-                    .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('compare 2 ' + d + ' values')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-            } else {
-                ul.append('button').attr('class','btn btn-mini')
-                    .on('click', compare2)
-                    .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>');
-                ul.append('button').attr('class','btn btn-mini') // Remove
-                    .on('click', function(dimToRemove) {
-                        dataSet.spliceDim(dimToRemove);
-                        treelike.collapsibleTree.root = dataSet.rootVal;
-                        treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
-                        bu.update();
-                    })
-                    .append('i').attr('class', 'icon-minus')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('remove ' + d + ' from tree')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-                d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
-                    /*
-                    .text(function(d) {
-                        return treelike.collapsibleTree.mergedDims[d+''] ?
-                            'Separate' : 'Merge';
-                    })
-                    */
-                    .on('click', function(d) {
-                        //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
-                        //var merge = treelike.collapsibleTree.mergedDims[parentDim] = !  treelike.collapsibleTree.mergedDims[parentDim];
-                        //treelike.collapsibleTree.update();
-                        treelike.collapsibleTree.toggleMerge(d+'');
-                        bu.update();
-                    })
-                    .append('i').attr('class', ' icon-random')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('toggle merging of ' + d + ' values')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-                ul.append('button').attr('class','btn btn-mini')
-                    .on('click', function(dim) { makeWider(dim); })
-                    .append('i').attr('class', ' icon-resize-full')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('move ' + d + ' right')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-                ul.append('button').attr('class','btn btn-mini')
-                    .on('click', function(dim) { makeNarrower(dim); })
-                    .append('i').attr('class', ' icon-resize-small')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('move ' + d + ' left')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-            }
-            ul.each(function(d) {
-                if (filteredValues(d).length) {
-                    d3.select(this).append('button').attr('class','btn btn-mini')
-                        .text('Unhide values')
-                        .on('click', function(d) {
-                            delete valueFilters[d];
-                            bu.update();
-                        })
-                }
-            });
-        });
     }
     function makeWider(dim) {
         dataSet.dimWidths[dim] += 50;
@@ -737,7 +831,8 @@ treelike.collapsibleTree = (function($, d3) {
             .on("click", function(d) { 
                 toggle(d); ct.update(d); })
             .on("mouseover", function(d) { 
-                console_log(d + 'highlight ');
+                //console_log(d + 'highlight ');
+                ct.statsFilter(d.records);
                 highlightRelated(this, d, true);
                 //legendReport(this, d); // BARHIGHLIGHT
             })
@@ -929,6 +1024,14 @@ treelike.collapsibleTree = (function($, d3) {
             t.node().fontSizeOrig = t.style('font-size');
         }
         t.style('font-weight','bold').style('font-size',parseInt(t.node().fontSizeOrig) * 1.5);
+    }
+    ct.statsFilter = function(records) {
+        d3.selectAll('span.stats')
+            .text(function(statsDim) {
+                var data = _(records).pluck(statsDim);
+                var mean = Math.round(d3.mean(data), 2);
+                return Math.round(d3.mean(data), 2);
+            })
     }
     function nodeUnhighlight(node) {
         if (_(node.__data__).has('mergeWith')) {

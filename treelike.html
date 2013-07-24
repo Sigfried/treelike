@@ -7,6 +7,7 @@
     <script type="text/javascript" src="./lib/jquery-1.9.1.js"></script>
     <!-- s cript type="text/javascript" src="./jquery/jquery-ui.js"></script -->
     <script type="text/javascript" src="./lib/d3.js"></script>
+    <script type="text/javascript" src="./lib/science.js/science.v1.js"></script>
     <script type="text/javascript" src="./lib/underscore.js"></script>
     <!--s cript type="text/javascript" src="../activedata/ActiveData.js"></script-->
     <script type="text/javascript" src="enlightened-data.js"></script>
@@ -33,16 +34,16 @@
                 <a href="javascript:restoreData()">Restore dataset</a>
                 -->
             </div>
-            <div class="body gp-row gp-scroll-y unused-dims">
-                <ul class="gp-listview dim-list">
-                </ul>
+            <div class="body gp-row gp-scroll-y dim-list">
+                <ul class="gp-listview dim-list displayed-dims"></ul>
+                <ul class="gp-listview dim-list unused-dims"></ul>
             </div>
             <div class="gp-footer gp-row">
                 Icons go here
             </div>
         </div>
         <div class="gp-right gp-col">
-            <div class="gp-header gp-row">
+            <div class="gp-header gp-row" id="file-info">
                 <!--
                 <div class="search-box">
                     <form>
@@ -180,21 +181,24 @@ if (navigator.userAgent.indexOf("IEMobile") >= 0) {
                         }
                         dataSet.dataPrep(data);
                         whenLoaded(dataSet);
-                        return;
+                        //return;
                         //dataSet.array = $.csv.toArrays(csv);
 
-                        var output = '<div class="span2">'
-                        output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
-                        output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
+                        //var output = '<div class="span2">'
+                        var output = '<div>'
+                        //output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
+                        //output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
+                        output += (file.type && file.type !== 'text/plain') ?  (file.type + ', ') : '';
                         output += file.size + '&nbsp;bytes';
-                        output += "<br/>\n";
+                        //output += "<br/>\n";
+                        output += ", ";
                         output += data.length + '&nbsp;rows';
                         output += "<br/>\n";
                         output += 'fields: ' + dataSet.allDims.join(', ');
                         //(file.lastModifiedDate && ('(' + file.lastModifiedDate.toLocaleDateString() + ')'));
                         output += '</div>';
                         var blurb = $(output);
-                        $('#file-list').append(blurb);
+                        $('#file-info').append(blurb);
                         blurb.on('click', function() {
                                 whenLoaded(dataSet) });
                     };
