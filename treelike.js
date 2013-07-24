@@ -367,7 +367,7 @@ treelike.browserUI = (function() {
                     var spread = domain[1] - domain[0];
                     // algorithm from
                     // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
-                    var bin_number = 3.5 * Math.sqrt(science.stats.variance(data))
+                    var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
                                         * Math.pow(data.length, -1/3);
                     var w = 100, h = 20,
                         bins = d3.layout.histogram().frequency(true)
@@ -397,7 +397,7 @@ treelike.browserUI = (function() {
 
                     bars.append("rect")
                         .attr("fill", "steelblue")
-                        .attr("width", function(d) { return spread / 8  })
+                        .attr("width", function(d) { return w / bin_number  })
                         .attr("height", function(d) { return y(d.y); });
 
                     /*
