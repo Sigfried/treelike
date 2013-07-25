@@ -2,14 +2,11 @@
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    
-    <!-- l ink type="text/css" rel="stylesheet" href="style.css"/ -->
     <script type="text/javascript" src="./lib/jquery-1.9.1.js"></script>
     <!-- s cript type="text/javascript" src="./jquery/jquery-ui.js"></script -->
     <script type="text/javascript" src="./lib/d3.js"></script>
     <script type="text/javascript" src="./lib/science.js/science.v1.js"></script>
     <script type="text/javascript" src="./lib/underscore.js"></script>
-    <!--s cript type="text/javascript" src="../activedata/ActiveData.js"></script-->
     <script type="text/javascript" src="enlightened-data.js"></script>
     <script type="text/javascript" src="./lib/jquery.csv.js"></script>
     <script type="text/javascript" src="./lib/lz-string-reference.js"></script>
@@ -17,22 +14,12 @@
 
     <script type="text/javascript" src="./lib/bootstrap/js/bootstrap.js"></script>
     <link type="text/css" rel="stylesheet" href="./lib/bootstrap/css/bootstrap.css"/>
-<!--
-    <script type="text/javascript" src="./typeahead.js/dist/typeahead.js"></script>
--->
     <link type="text/css" rel="stylesheet" href="./treelike.css"/>
-    <style type="text/css">
-        /* Pane configuration */
-    </style>
   </head>
   <body>
     <div class="gp-left gp-col">
-            <div class="gp-header gp-row">
+            <div class="gp-header gp-row" id="file-chooser">
                 <input type=file id=files name=files[] />
-                <!--
-                <a id="save-dataset">Save dataset</a>
-                <a href="javascript:restoreData()">Restore dataset</a>
-                -->
             </div>
             <div class="body gp-row gp-scroll-y dim-list">
                 <ul class="gp-listview dim-list displayed-dims"></ul>
@@ -44,116 +31,25 @@
         </div>
         <div class="gp-right gp-col">
             <div class="gp-header gp-row" id="file-info">
-                <!--
-                <div class="search-box">
-                    <form>
-                        <input type="text" size="30"/> 
-                        <input type="submit" value="Search" onclick="return false"/>
-                    </form>
-                </div>
-                -->
             </div>
             <div class="body gp-row gp-scroll-y" id="main-pane">
-                <!--
-                <h3>Here are some other controls</h3>
-                <ul class="listview inset">
-                    <li>One</li><li>Two</li><li>Three</li>
-                </ul>
-
-                <p>... and here's a horizontally-scrollable thing:</p>
-
-                <div class="scroll-x tiles">
-                    <ul>
-                        <li>Asia</li>
-                        <li>Africa</li>
-                        <li>America</li>
-                        <li>Antarctica</li>
-                        <li>Australia</li>
-                        <li>Europe</li>
-                    </ul>
-                </div>
-
-                <p>That's enough.</p><p>That's enough.</p><p>That's enough.</p>
-                -->
             </div>
             <div class="gp-footer gp-row">
             </div>
         </div>
-<!--
-        <div id="viz" class="viz group container-fluid">
-            <div id=inputs class="row-fluid">
-                <div class="span2">
-                    <h3>Tree-like</h3>
-                    <input type=file id=files name=files[] multiple />
-                    <a id="save-dataset">Save dataset</a>
-                    <a href="javascript:restoreData()">Restore dataset</a>
-                </div>
-                <div class="span10" id="file-list"></div>
-            </div>
-            <div class="row-fluid">
-                <div class="unused-dims span7 dim-container">
-                    <ul class="nav nav-tabs"></ul>
-                    <div class="tab-content span12"></div>
-                </div>
-                <div class="search-box span3">
-                    <form>
-                        <input type="text" size="30"/> 
-                        <input type="submit" value="Search" onclick="return false"/>
-                    </form>
-                </div>
-            </div>
-            <div class="row-fluid">
-                <div class="displayed-dims span12 dim-container"
-                    style="width:auto">
-                    <ul class="nav nav-tabs"></ul>
-                    <div class="tab-content span12"></div>
-                </div>
-            </div>
-            <div class="row-fluid">
-                <div class="tree span8"></div>
-                <div class="legend span4"></div>
-            </div>
-        </div>
--->
     <script type="text/javascript">
-if (navigator.userAgent.indexOf("IEMobile") >= 0) {
-    document.body.className += " iemobile";
-    window.onscroll = function () { window.scroll(0, 0) }
-}
+        if (navigator.userAgent.indexOf("IEMobile") >= 0) {
+            document.body.className += " iemobile";
+            window.onscroll = function () { window.scroll(0, 0) }
+        }
         var gbo = {}, restoreData;  // GLOBAL DATA OBJECT
         $(function() {
             function whenLoaded(dataSet) {
                 treelike.collapsibleTree.init(dataSet, '#main-pane');
                 var browserUI = treelike.browserUI.init(dataSet);
-                var dimControls = d3.select('ul.dim-list').selectAll('li')
-                    .data(dataSet.dims.slice(0)).enter()
-                    .append('li')
-                        .attr('class','dropdown')
-                var buttons = dimControls
-                    .append('a')
-                        .attr('href', '#')
-                        .attr('class', 'dropdown-toggle')
-                        .attr('data-toggle','dropdown')
-                        .text(function(d) { return d + ' ' })
-                    .append('b')
-                        .attr('class','caret')
-                var uls = buttons
-                    .append('ul')
-                        .attr('class','dropdown-menu')
-
-                uls
-                    .append('li').append('a').text('Show');
-                uls
-                    .append('li').append('a').text('Merge');
-
-                $('#save-dataset').on('click', function(e) {
-                        e.preventDefault();
-                        localStorage.setItem('dataSet', 
-                            LZString.compress(JSON.stringify(dataSet)));
-                        alert('dataset stored')
-                })
             }
             function handleFileSelect(evt) {
+                $('#file-chooser input').remove();
                 var files = evt.target.files; // FileList object
                 if (files.length !== 1) { throw new Error("weird number of files"); }
                 _(files).each(function(file) {
@@ -186,7 +82,7 @@ if (navigator.userAgent.indexOf("IEMobile") >= 0) {
 
                         //var output = '<div class="span2">'
                         var output = '<div>'
-                        //output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
+                        output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
                         //output += (file.type && file.type !== 'text/plain') ?  (file.type + '<br/>\n') : '';
                         output += (file.type && file.type !== 'text/plain') ?  (file.type + ', ') : '';
                         output += file.size + '&nbsp;bytes';
@@ -207,6 +103,8 @@ if (navigator.userAgent.indexOf("IEMobile") >= 0) {
                 // post the results
             }
 
+            /*
+            console.log($.eventReport());
             $.eventReport = function(selector, root) {
                 var s = [];
                 $(selector || '*', root).addBack().each(function() {
@@ -233,17 +131,7 @@ if (navigator.userAgent.indexOf("IEMobile") >= 0) {
             $.fn.eventReport = function(selector) {
                 return $.eventReport(selector, this);
             }
-            //var treelike_inst = treelike.data.load(['myData'], whenLoaded, true);
-            restoreData = function() {
-                console.log($.eventReport());
-                var dataSet = JSON.parse(LZString.decompress(
-                        localStorage.getItem('dataSet')));
-                dataSet.__proto__ = treelike.DataSet.prototype;
-                treelike.collapsibleTree.init(dataSet, 'div.tree');
-                var browserUI = treelike.browserUI.init(dataSet);
-                console.log('loaded DataSet');
-                console.log($.eventReport());
-            };
+            */
             $(document).ready(function() {
                 if(isAPIAvailable()) {
                 $('#files').bind('change', handleFileSelect);
@@ -252,26 +140,25 @@ if (navigator.userAgent.indexOf("IEMobile") >= 0) {
             function isAPIAvailable() {
                 // Check for the various File API support.
                 if (window.File && window.FileReader && window.FileList && window.Blob) {
-                // Great success! All the File APIs are supported.
-                return true;
+                    // Great success! All the File APIs are supported.
+                    return true;
                 } else {
-                // source: File API availability - http://caniuse.com/#feat=fileapi
-                // source: <output> availability - http://html5doctor.com/the-output-element/
-                document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
-                // 6.0 File API & 13.0 <output>
-                document.writeln(' - Google Chrome: 13.0 or later<br />');
-                // 3.6 File API & 6.0 <output>
-                document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
-                // 10.0 File API & 10.0 <output>
-                document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
-                // ? File API & 5.1 <output>
-                document.writeln(' - Safari: Not supported<br />');
-                // ? File API & 9.2 <output>
-                document.writeln(' - Opera: Not supported');
-                return false;
+                    // source: File API availability - http://caniuse.com/#feat=fileapi
+                    // source: <output> availability - http://html5doctor.com/the-output-element/
+                    document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+                    // 6.0 File API & 13.0 <output>
+                    document.writeln(' - Google Chrome: 13.0 or later<br />');
+                    // 3.6 File API & 6.0 <output>
+                    document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+                    // 10.0 File API & 10.0 <output>
+                    document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+                    // ? File API & 5.1 <output>
+                    document.writeln(' - Safari: Not supported<br />');
+                    // ? File API & 9.2 <output>
+                    document.writeln(' - Opera: Not supported');
+                    return false;
                 }
             }
-
         });
     </script>
   </body>

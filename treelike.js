@@ -148,22 +148,6 @@ treelike.browserUI = (function() {
     bu.update = function() {
         updateDims('div.dim-list>ul.displayed-dims', dataSet.dims);
         updateDims('div.dim-list>ul.unused-dims', _.difference(dataSet.allDims, dataSet.dims));
-        /*
-        //updateDims('div.displayed-dims', dataSet.dims, true);  not using now
-        addButtons();
-        // overriding bootstrap.js line 1820
-        $(document).off('click.tab.data-api');
-        $(document).on('click.tab.data-api', '[data-toggle="tab"]', function (e) {
-            e.preventDefault();
-            var tab = $($(this).attr('href'));
-            var activate = !tab.hasClass('active');
-            $('div.tab-content>div.tab-pane.active').removeClass('active');
-            $('ul.nav.nav-tabs>li.active').removeClass('active');
-            if (activate) {
-                $(this).tab('show')
-            }
-        });
-        */
     };
     function sparkBars(node, arr, width, height, color, dim, val) {
         var x = d3.scale.linear()
@@ -190,92 +174,49 @@ treelike.browserUI = (function() {
             .attr('y', function(d) { return height - y(d) })
             .attr('height', function(d) { return y(d) })
             .attr('width', barWidth)
-            /*  BARHIGHLIGHT
-            .each(function(d, i) {
-                val[i].legendBar = this;
-                / *
-                var bar = d3.select(this);
-                _.chain(attrvals[i]).pairs().each(function(p) {
-                    bar.attr(p[0], p[1])
-                });
-                * /
-            })
-            */
         return svg;
     }
-    function updateDims(selector, data, align) {
-        var maxValueCount = _.chain(dataSet.dimGroups)
-            .values().pluck('length').max().value();
-        var lis = d3.select(selector).selectAll('li')
-                    .data(data, _.identity);
-        lis.exit().remove();
-        lis.enter().append('li')
-            .attr('dim', function(d) { return d })
-            .each(function(d) {
-                var li = d3.select(this);
-                li.append('div')
-                    .attr('class', 'delete-icon')
-                    .on('click', function(d) {
-                        d3.select(this.parentElement).remove();
-                        if (_(dataSet.dims).contains(d)) {
-                            dataSet.spliceDim(d, {fromList:true});
-                            treelike.collapsibleTree.root = dataSet.rootVal;
-                            treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
-                            bu.update();
-                        } else {
-                            dataSet.spliceDim(d, {fromList:true});
-                        }
-                    })
-                    .append('i').attr('class', ' icon-remove')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('discard ' + d + ' dimension')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-                ;
-                li.append('span').text(function(d) { return d });
-                var vals = dataSet.dimGroups[d];
-                li.append('span')
-                    .style('font-size', '70%')
-                    .style('font-weight', 'normal')
-                    .text(' ' + vals.length + ' val' + (vals.length === 1 ? '' : 's') + ' ');
-                li.append('div').attr('class','buttons');
-                var vals = dataSet.dimGroups[d];
-                var chart = li.append('div');
-                chart.text(vals.length + ' val' + 
-                    (vals.length === 1 ? '' : 's') + ' ');
-                sparkBars( chart, 
-                        _.chain(vals).pluck('records').pluck('length').value(),
-                        100, 20, '#777', d, vals)
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip( //vals.rawValues().join(', '));
-                            _(vals).map(function(d) {
+    function updateDim(liNode, datum) {
+        var li = d3.select(liNode);
+        li.append('div')
+            .attr('class', 'delete-icon')
+            .on('click', dimClick)
+            // X to trash the whole dimension control:
+            .append('i').attr('class', ' icon-remove')
+            .on('mouseover', function(d) {
+                treelike.tooltip.showTooltip('discard ' + d + ' dimension')
+            })
+            .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+        ;
+        li.append('span').text(function(d) { return d });
+        var vals = dataSet.dimGroups[datum];
+        li.append('span')
+            .style('font-size', '70%')
+            .style('font-weight', 'normal')
+            .text(' ' + vals.length + ' val' + (vals.length === 1 ? '' : 's') + ' ');
+        li.append('div').attr('class','buttons');
+        var vals = dataSet.dimGroups[datum];
+        var chart = li.append('div');
+        chart.text(vals.length + ' val' + 
+            (vals.length === 1 ? '' : 's') + ' ');
+        sparkBars( chart, 
+                _.chain(vals).pluck('records').pluck('length').value(),
+                100, 20, '#777', datum, vals)
+            .on('mouseover', function(d) {
+                var tip = _(vals).map(function(d) {
                                 return d + ' (' + d.records.length + ' recs)'
-                            }).join('<br/>\n'), 
-                                {'font-size': '11px', 'font-weight':'normal'}
-                                );
-                    })
-                    .on('mouseout', function(d) {
-                        treelike.tooltip.hideTooltip();
-                    });
-                chart.append('button').attr('class','btn btn-mini') // show filters
-                    .on('click', function(dim) {
-                        filterDimension(dim);
-                    })
-                    .append('i').attr('class', 'icon-filter')
-                    .on('mouseover', function(d) {
-                        treelike.tooltip.showTooltip('filter ' + d + ' values')
-                    })
-                    .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
+                            }).join('<br/>\n'); 
+                treelike.tooltip.showTooltip(
+                    tip, {'font-size': '11px', 'font-weight':'normal'});
+            })
+            .on('mouseout', function(d) {
+                treelike.tooltip.hideTooltip();
             });
-        lis.classed('displayed-dim', function(d) {
-            return dataSet.dims.indexOf(d) > -1;
-        });
-        //var uls = d3.selectAll('div.tab-content div.btn-group');
-        var uls = d3.selectAll('ul.dim-list div.buttons');
-        uls.each(function(d) {
-            var ul = d3.select(this);
+    }
+    function makeButtons(node, datum) {
+            var ul = d3.select(node);
             ul.selectAll('button').remove();
-            if (dataSet.dims.indexOf(d) === -1) {
+            if (dataSet.dims.indexOf(datum) === -1) {
                 ul.append('button').attr('class','btn btn-mini')
                     //.text('Show')
                     .on('click', function(dim) {
@@ -305,7 +246,7 @@ treelike.browserUI = (function() {
                         treelike.tooltip.showTooltip('remove ' + d + ' from tree')
                     })
                     .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-                d !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
+                datum !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
                     /*
                     .text(function(d) {
                         return treelike.collapsibleTree.mergedDims[d+''] ?
@@ -339,6 +280,13 @@ treelike.browserUI = (function() {
                     })
                     .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
             }
+            ul.append('button').attr('class','btn btn-mini')
+                .on('click', compare2)
+                .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>')
+                .on('mouseover', function(d) {
+                    treelike.tooltip.showTooltip('compare 2 ' + d + ' values')
+                })
+                .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
             ul.append('button').attr('class','btn btn-mini') // show filters
                 .on('click', function(dim) {
                     filterDimension(dim);
@@ -346,13 +294,6 @@ treelike.browserUI = (function() {
                 .append('i').attr('class', 'icon-filter')
                 .on('mouseover', function(d) {
                     treelike.tooltip.showTooltip('filter ' + d + ' values')
-                })
-                .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
-            ul.append('button').attr('class','btn btn-mini')
-                .on('click', compare2)
-                .html('<i class="icon-question-sign"></i><i class="icon-resize-horizontal"></i><i class="icon-question-sign"/></i>')
-                .on('mouseover', function(d) {
-                    treelike.tooltip.showTooltip('compare 2 ' + d + ' values')
                 })
                 .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
             ul.filter(function(d) {
@@ -369,6 +310,8 @@ treelike.browserUI = (function() {
                     // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
                     var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
                                         * Math.pow(data.length, -1/3);
+                    bin_number = (bin_number < 11 && dataSet.dimGroups[d].length < 20) 
+                        ? dataSet.dimGroups[d].length : bin_number;
                     var w = 100, h = 20,
                         bins = d3.layout.histogram().frequency(true)
                             .bins(bin_number)(data),
@@ -450,6 +393,25 @@ treelike.browserUI = (function() {
                         })
                 }
             });
+    }
+    function updateDims(selector, data) {
+        var maxValueCount = _.chain(dataSet.dimGroups)
+            .values().pluck('length').max().value();
+        var lis = d3.select(selector).selectAll('li')
+                    .data(data, _.identity);
+        lis.exit().remove();
+        lis.enter().append('li')
+            .attr('dim', function(d) { return d })
+            .each(function(d) {
+                updateDim(this, d);
+            });
+        lis.classed('displayed-dim', function(d) {
+            return dataSet.dims.indexOf(d) > -1;
+        });
+        //var uls = d3.selectAll('div.tab-content div.btn-group');
+        var uls = d3.selectAll('ul.dim-list div.buttons');
+        uls.each(function(d) {
+            makeButtons(this, d);
         });
 
         return;
@@ -476,6 +438,17 @@ treelike.browserUI = (function() {
         $(selector).html(lis.join('\n'));
         $(selector).find('li').on('click', labelClick);
     };
+    function dimClick(d) {
+        d3.select(this.parentElement).remove();
+        if (_(dataSet.dims).contains(d)) {
+            dataSet.spliceDim(d, {fromList:true});
+            treelike.collapsibleTree.root = dataSet.rootVal;
+            treelike.collapsibleTree.update(treelike.collapsibleTree.root, true);
+            bu.update();
+        } else {
+            dataSet.spliceDim(d, {fromList:true});
+        }
+    }
     function filterDimension(dim) {
         var footer = d3.select('div.gp-right div.gp-footer');
         footer.html('');
