@@ -214,7 +214,8 @@ treelike.browserUI = (function() {
             });
     }
     function makeButtons(node, datum) {
-            var ul = d3.select(node);
+            var ul = d3.select(node)
+                        .selectAll('ul.dim-list div.buttons');
             ul.selectAll('button').remove();
             if (dataSet.dims.indexOf(datum) === -1) {
                 ul.append('button').attr('class','btn btn-mini')
@@ -247,16 +248,7 @@ treelike.browserUI = (function() {
                     })
                     .on('mouseout', function(d) { treelike.tooltip.hideTooltip(); });
                 datum !== dataSet.dims[0] && ul.append('button').attr('class','btn btn-mini')
-                    /*
-                    .text(function(d) {
-                        return treelike.collapsibleTree.mergedDims[d+''] ?
-                            'Separate' : 'Merge';
-                    })
-                    */
                     .on('click', function(d) {
-                        //var parentDim = dataSet.dims[dataSet.dims.indexOf(d) - 1];
-                        //var merge = treelike.collapsibleTree.mergedDims[parentDim] = !  treelike.collapsibleTree.mergedDims[parentDim];
-                        //treelike.collapsibleTree.update();
                         treelike.collapsibleTree.toggleMerge(d+'');
                         bu.update();
                     })
@@ -303,80 +295,7 @@ treelike.browserUI = (function() {
                 .append('button')
                 .attr('class','btn btn-mini') // show filters
                 .on('click', function(d) {
-                    var data = _.pluck(dataSet.data,d);
-                    var domain = d3.extent(data);
-                    var spread = domain[1] - domain[0];
-                    // algorithm from
-                    // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
-                    var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
-                                        * Math.pow(data.length, -1/3);
-                    bin_number = (bin_number < 11 && dataSet.dimGroups[d].length < 20) 
-                        ? dataSet.dimGroups[d].length : bin_number;
-                    var w = 100, h = 20,
-                        bins = d3.layout.histogram().frequency(true)
-                            .bins(bin_number)(data),
-                            //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
-                        x = d3.scale.linear().domain(domain).range([0, w]),
-                        max = d3.max(bins, function(d) { return d.length; }),
-                        y = d3.scale.linear().domain([0, max]).range([0, h]);
-                    //var kde = science.stats.kde().sample(data);
-                    //var bw = science.stats.bandwidth.nrd0(data);
-                    //kde.bandwidth(.00001);
-                    var line = d3.svg.line()
-                                .x(function(d) { return x(d[0]); })
-                                .y(function(d) { return h - y(d[1]); });
-
-                    var chart = d3.select(this.parentElement.parentElement)
-                                    .append('svg')
-                                        .attr('width',w)
-                                        .attr('height',h);
-                    var bars = chart.selectAll("g.bar")
-                                    .data(bins)
-                                .enter().append("g")
-                                    .attr("class", "bar")
-                                    .attr("transform", function(d, i) {
-                                        return "translate(" + x(d.x) + "," + (h - y(d.y)) + ")";
-                                    });
-
-                    bars.append("rect")
-                        .attr("fill", "steelblue")
-                        .attr("width", function(d) { return w / bin_number  })
-                        .attr("height", function(d) { return y(d.y); });
-
-                    /*
-                    chart.selectAll("path")
-                        .data([science.stats.bandwidth.nrd0])
-                            .enter().append("path")
-                                .style('fill','none')
-                                .style('stroke','black')
-                                .style('stroke-width','1.5px')
-                            .attr("d", function(h) {
-                                return line( 
-                                    kde(d3.range(low, high, (high-low)/10)))
-                            });
-                    */
-                    d3.select(chart.node().parentElement)
-                        .append('p')
-                            .text('Mean: ')
-                        .append('span')
-                            .attr('class','stats')
-                    treelike.collapsibleTree.statsFilter(dataSet.data);
-                    return;
-                    var vals = dataSet.dimGroups[d];
-                    sparkBars( chart, 
-                            _.chain(vals).pluck('records').pluck('length').value(),
-                            100, 20, '#777', d, vals)
-                        .on('mouseover', function(d) {
-                            treelike.tooltip.showTooltip( //vals.rawValues().join(', '));
-                                _(vals).map(function(d) {
-                                    return d + ' (' + d.records.length + ' recs)'
-                                }).join('<br/>\n'), 
-                                    {'font-size': '11px', 'font-weight':'normal'}
-                                    );
-                        })
-                        .on('mouseout', function(d) {
-                            treelike.tooltip.hideTooltip();
-                        });
+                    bu.showStats(dataSet, d, this.parentElement.parentElement);
                 })
                 .append('i').attr('class', 'icon-info-sign')
                 .on('mouseover', function(d) {
@@ -394,6 +313,91 @@ treelike.browserUI = (function() {
                 }
             });
     }
+    bu.showStats = function(dataForRecords, statsDim, container) {
+        var w = 100, h = 20, chart;
+        dataSet.statsDims = dataSet.statsDims || [];
+        if (dataSet.statsDims.indexOf(statsDim) === -1) {
+            dataSet.statsDims.push(statsDim);
+            chart = d3.select(container)
+                .append('svg')
+                    .attr('dim', statsDim)
+                    .attr('width',w)
+                    .attr('height',h);
+        } else {
+            chart = d3.selectAll('svg[dim="' + statsDim + '"]');
+        }
+        var data = _.pluck(dataForRecords.data,statsDim);
+        var domain = d3.extent(data);
+        var spread = domain[1] - domain[0];
+        // algorithm from
+        // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
+        var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
+                            * Math.pow(data.length, -1/3);
+        bin_number = (bin_number < 11 && dataSet.dimGroups[statsDim].length < 20) 
+            ? dataSet.dimGroups[statsDim].length : bin_number;
+        var bins = d3.layout.histogram().frequency(true)
+                .bins(bin_number)(data),
+                //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
+            x = d3.scale.linear().domain(domain).range([0, w]),
+            max = d3.max(bins, function(d) { return d.length; }),
+            y = d3.scale.linear().domain([0, max]).range([0, h]);
+        /*
+        var kde = science.stats.kde().sample(data);
+        var bw = science.stats.bandwidth.nrd0(data);
+        kde.bandwidth(.00001);
+        var line = d3.svg.line()
+                    .x(function(d) { return x(d[0]); })
+                    .y(function(d) { return h - y(d[1]); });
+        */
+        var bars = chart.selectAll("g.bar")
+                        .data(bins, function(arr) { return arr[0] });
+        bars.exit().remove();
+        bars.enter().append("g")
+            .attr("class", "bar");
+        bars.transition().duration(1000)
+            .attr("transform", function(d, i) {
+                return "translate(" + x(d.x) + "," + (h - y(d.y)) + ")";
+            });
+
+        bars.enter().append("rect")
+            .attr("fill", "steelblue");
+        bars.transition().duration(1000)
+            .attr("width", function(d) { return w / bin_number  })
+            .attr("height", function(d) { return y(d.y); });
+
+        /*
+        chart.selectAll("path")
+            .data([science.stats.bandwidth.nrd0])
+                .enter().append("path")
+                    .style('fill','none')
+                    .style('stroke','black')
+                    .style('stroke-width','1.5px')
+                .attr("d", function(h) {
+                    return line( 
+                        kde(d3.range(low, high, (high-low)/10)))
+                });
+        */
+        d3.select(chart.node().parentElement)
+            .append('p')
+                .attr('class','stats')
+            .html(function(statsDim) {
+                var stats = [
+                                ['count', data.length],
+                                ['min', d3.min(data)],
+                                ['max', d3.max(data)],
+                                ['mean', Math.round(100*d3.mean(data))/100],
+                                ['median', Math.round(100*d3.median(data))/100]
+                ];
+                var out = _(stats).map(function (d) { return d.join(': ') })
+                            .join('<br/>\n');
+                return out;
+            })
+    }
+    bu.updateStats = function(d) {
+        _(dataSet.statsDims).each(function(sd) {
+            bu.showStats(d, sd);
+        });
+    }
     function updateDims(selector, data) {
         var maxValueCount = _.chain(dataSet.dimGroups)
             .values().pluck('length').max().value();
@@ -402,41 +406,13 @@ treelike.browserUI = (function() {
         lis.exit().remove();
         lis.enter().append('li')
             .attr('dim', function(d) { return d })
+            .classed('displayed-dim', function(d) {
+                return dataSet.dims.indexOf(d) > -1;
+            })
             .each(function(d) {
                 updateDim(this, d);
+                makeButtons(this, d);
             });
-        lis.classed('displayed-dim', function(d) {
-            return dataSet.dims.indexOf(d) > -1;
-        });
-        //var uls = d3.selectAll('div.tab-content div.btn-group');
-        var uls = d3.selectAll('ul.dim-list div.buttons');
-        uls.each(function(d) {
-            makeButtons(this, d);
-        });
-
-        return;
-        var templ = _.template(
-            '<li dim="<%=data.dim%>">' +
-            '<%= data.vals %> <%= data.dim %>' +
-            '<%= data.sparkbars %>' +
-            '</li>'
-            //'<div class="progress">' +
-            //'<div class="bar" style="width:<%= data.pct %>%">' +
-            //'</div></div></li>'
-            , null, {variable:'data'});
-        var lis = _(dataSet.allDims).map(function(d,i) {
-                    return templ({
-                        dim:d, 
-                        i: i,
-                        pct:Math.round(100*dataSet.dimGroups[d].length/maxValueCount),
-                        vals: dataSet.dimGroups[d].length,
-                        sparkbars: sparkBars(
-                            _(dataSet.dimGroups[d]).pluck('length'),
-                            100, 20, '#777').outerHTML,
-                    });
-                });
-        $(selector).html(lis.join('\n'));
-        $(selector).find('li').on('click', labelClick);
     };
     function dimClick(d) {
         d3.select(this.parentElement).remove();
@@ -810,7 +786,7 @@ treelike.collapsibleTree = (function($, d3) {
                 toggle(d); ct.update(d); })
             .on("mouseover", function(d) { 
                 //console_log(d + 'highlight ');
-                ct.statsFilter(d.records);
+                treelike.browserUI.updateStats(d);
                 highlightRelated(this, d, true);
                 //legendReport(this, d); // BARHIGHLIGHT
             })
@@ -1002,14 +978,6 @@ treelike.collapsibleTree = (function($, d3) {
             t.node().fontSizeOrig = t.style('font-size');
         }
         t.style('font-weight','bold').style('font-size',parseInt(t.node().fontSizeOrig) * 1.5);
-    }
-    ct.statsFilter = function(records) {
-        d3.selectAll('span.stats')
-            .text(function(statsDim) {
-                var data = _(records).pluck(statsDim);
-                var mean = Math.round(d3.mean(data), 2);
-                return Math.round(d3.mean(data), 2);
-            })
     }
     function nodeUnhighlight(node) {
         if (_(node.__data__).has('mergeWith')) {
