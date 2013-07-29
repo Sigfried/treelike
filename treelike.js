@@ -314,19 +314,25 @@ treelike.browserUI = (function() {
             });
     }
     bu.showStats = function(dataForRecords, statsDim, container) {
-        var w = 100, h = 20, chart;
+        var w = 100, h = 20, chart, statsUL, data;
         dataSet.statsDims = dataSet.statsDims || [];
         if (dataSet.statsDims.indexOf(statsDim) === -1) {
             dataSet.statsDims.push(statsDim);
             chart = d3.select(container)
                 .append('svg')
+                    .attr('class', 'stats-hist')
                     .attr('dim', statsDim)
                     .attr('width',w)
                     .attr('height',h);
+            statsUL = d3.select(container).append('ul')
+                        .attr('class','stats')
+                        .attr('dim', statsDim);
+            data = _.pluck(dataForRecords.data,statsDim);
         } else {
-            chart = d3.selectAll('svg[dim="' + statsDim + '"]');
+            chart = d3.selectAll('svg.stats-hist[dim="' + statsDim + '"]');
+            statsUL = d3.selectAll('ul.stats[dim="' + statsDim + '"]');
+            data = _.pluck(dataForRecords.records,statsDim);
         }
-        var data = _.pluck(dataForRecords.data,statsDim);
         var domain = d3.extent(data);
         var spread = domain[1] - domain[0];
         // algorithm from
@@ -349,21 +355,18 @@ treelike.browserUI = (function() {
                     .x(function(d) { return x(d[0]); })
                     .y(function(d) { return h - y(d[1]); });
         */
+        chart.selectAll("g.bar").remove();
         var bars = chart.selectAll("g.bar")
                         .data(bins, function(arr) { return arr[0] });
-        bars.exit().remove();
         bars.enter().append("g")
-            .attr("class", "bar");
-        bars.transition().duration(1000)
-            .attr("transform", function(d, i) {
-                return "translate(" + x(d.x) + "," + (h - y(d.y)) + ")";
-            });
-
-        bars.enter().append("rect")
-            .attr("fill", "steelblue");
-        bars.transition().duration(1000)
-            .attr("width", function(d) { return w / bin_number  })
-            .attr("height", function(d) { return y(d.y); });
+                .attr("class", "bar")
+            .append("rect")
+                .attr("fill", "steelblue")
+                .attr("transform", function(d, i) {
+                    return "translate(" + x(d.x) + "," + (h - y(d.y)) + ")";
+                })
+                .attr("width", function(d) { return w / bin_number  })
+                .attr("height", function(d) { return y(d.y); });
 
         /*
         chart.selectAll("path")
@@ -377,25 +380,23 @@ treelike.browserUI = (function() {
                         kde(d3.range(low, high, (high-low)/10)))
                 });
         */
-        d3.select(chart.node().parentElement)
-            .append('p')
-                .attr('class','stats')
-            .html(function(statsDim) {
-                var stats = [
-                                ['count', data.length],
-                                ['min', d3.min(data)],
-                                ['max', d3.max(data)],
-                                ['mean', Math.round(100*d3.mean(data))/100],
-                                ['median', Math.round(100*d3.median(data))/100]
-                ];
-                var out = _(stats).map(function (d) { return d.join(': ') })
-                            .join('<br/>\n');
-                return out;
-            })
+        var lis = statsUL.selectAll('li')
+            .data( [
+                    ['count', data.length],
+                    ['min', d3.min(data)],
+                    ['max', d3.max(data)],
+                    ['mean', Math.round(100*d3.mean(data))/100],
+                    ['median', Math.round(100*d3.median(data))/100]
+                ]);
+        lis.exit().remove();
+        lis.enter().append('li');
+        lis.html(function(d) {
+            return d[0] + ': ' + d[1];
+        });
     }
-    bu.updateStats = function(d) {
-        _(dataSet.statsDims).each(function(sd) {
-            bu.showStats(d, sd);
+    bu.updateStats = function(nodeData) {
+        _(dataSet.statsDims).each(function(statDimData) {
+            bu.showStats(nodeData, statDimData);
         });
     }
     function updateDims(selector, data) {
