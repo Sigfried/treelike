@@ -812,8 +812,21 @@ treelike.collapsibleTree = (function($, d3) {
             .attr("dy", ".35em")
             .attr("text-anchor", function(d) { 
                 return d.children || d._children ? "end" : "start"; })
-            .text(function(d) { return d+''; })
+            .text(function(d) { return d + ' (' + d.records.length + ')'; })
             .style("fill-opacity", 1e-6);
+
+        nodeEnter.filter(function(d) { return !(d.children || d._children) })
+            .append("svg:rect")
+                .attr("x", function(d) { 
+                    return d.children || d._children ? -10 : 10; })
+                .attr("y", "-.35em")
+                .attr('height', '.6em')
+                .attr('width', function(d) { 
+                    return 2 * dataSet.dimWidths[d.dim] * d.records.length / enlightenedData
+                        .aggregate(_(d.parentList).pluck('records'), 'length').max
+                })
+                .style('opacity', 0.35)
+                .attr('fill', 'blue')
 
         // Transition nodes to their new position.
         var nodeUpdate = node
