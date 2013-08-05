@@ -85,7 +85,7 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
 
 .gp-left.gp-col { width: 250px; }
 .gp-right.gp-col { left: 250px; right: 0; }
-.gp-header.gp-row { height: 175px; }
+.gp-header.gp-row { height: 75px; }
 .body.gp-row { top: 75px; bottom: 50px; }
 .gp-footer.gp-row { height: 50px; bottom: 0; line-height: 50px; }
 
@@ -100,6 +100,7 @@ button { display: block; border: 2px solid #aaa; line-height: normal; background
 // bootstrap stuff -- but need this:
 div.filter-list {
     line-height: 14px !important;
+    max-height: 300px !important;
     height: auto !important;
 }
 ul.filter-list {
@@ -223,3 +224,12 @@ div.pie {
     font-size: 11px;
 }
 
+.axis text {
+    font-size: 10px;
+}
+
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}

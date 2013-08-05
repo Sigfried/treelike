@@ -199,7 +199,7 @@ button {
 
 /* line 88, treelike.scss */
 .gp-header.gp-row {
-  height: 175px; }
+  height: 75px; }
 
 /* line 89, treelike.scss */
 .body.gp-row {
@@ -219,13 +219,14 @@ button {
 /* line 101, treelike.scss */
 div.filter-list {
   line-height: 14px !important;
+  max-height: 300px !important;
   height: auto !important; }
 
-/* line 105, treelike.scss */
+/* line 106, treelike.scss */
 ul.filter-list {
   margin-left: 0;
   list-style: none; }
-  /* line 108, treelike.scss */
+  /* line 109, treelike.scss */
   ul.filter-list li {
     margin: 1px;
     cursor: pointer;
@@ -247,23 +248,23 @@ ul.filter-list {
     white-space: nowrap;
     vertical-align: baseline;
     list-style: none; }
-    /* line 132, treelike.scss */
+    /* line 133, treelike.scss */
     ul.filter-list li:hover {
       background-color: #eee;
       color: #333;
       opacity: 1 !important; }
-    /* line 137, treelike.scss */
+    /* line 138, treelike.scss */
     ul.filter-list li.from {
       background-color: #996666 !important; }
-    /* line 140, treelike.scss */
+    /* line 141, treelike.scss */
     ul.filter-list li.to {
       background-color: #4444ff !important; }
-    /* line 143, treelike.scss */
+    /* line 144, treelike.scss */
     ul.filter-list li.label-filtered {
       color: #333;
       background-color: #eee;
       opacity: 0.5; }
-      /* line 147, treelike.scss */
+      /* line 148, treelike.scss */
       ul.filter-list li.label-filtered:hover {
         color: #fff;
         background-color: #333;
@@ -279,66 +280,76 @@ body {
     left:0;
 }
 */
-/* line 165, treelike.scss */
+/* line 166, treelike.scss */
 #footer {
   position: absolute;
   bottom: 0px;
   width: 100%; }
 
-/* line 171, treelike.scss */
+/* line 172, treelike.scss */
 path.link {
   fill: none;
   stroke: #aaaa44;
   stroke-width: 1px; }
-  /* line 175, treelike.scss */
+  /* line 176, treelike.scss */
   path.link.from-version {
     stroke: #996666; }
-  /* line 178, treelike.scss */
+  /* line 179, treelike.scss */
   path.link.to-version {
     stroke: #4444ff; }
 
-/* line 183, treelike.scss */
+/* line 184, treelike.scss */
 .clear {
   clear: both; }
 
-/* line 186, treelike.scss */
+/* line 187, treelike.scss */
 .group:after {
   content: "";
   display: table;
   clear: both; }
 
-/* line 191, treelike.scss */
+/* line 192, treelike.scss */
 div.pie {
   float: left;
   text-align: center;
   border-radius: 5px; }
 
-/* line 196, treelike.scss */
+/* line 197, treelike.scss */
 .dimension-dragger {
   background: orange;
   font-weight: bold;
   width: 100%;
   height: 100%; }
 
-/* line 202, treelike.scss */
+/* line 203, treelike.scss */
 .dimension-receptacle {
   min-width: 40px;
   min-height: 20px;
   border: 2px dashed purple;
   text-align: center; }
 
-/* line 209, treelike.scss */
+/* line 210, treelike.scss */
 .node circle {
   cursor: pointer;
   fill: #ddd;
   stroke: steelblue; }
 
-/* line 215, treelike.scss */
+/* line 216, treelike.scss */
 .node path {
   cursor: pointer;
   fill: lightsteelblue;
   stroke: steelblue; }
 
-/* line 222, treelike.scss */
+/* line 223, treelike.scss */
 .node text {
   font-size: 11px; }
+
+/* line 227, treelike.scss */
+.axis text {
+  font-size: 10px; }
+
+/* line 231, treelike.scss */
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges; }

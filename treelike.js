@@ -313,49 +313,8 @@ treelike.browserUI = (function() {
                 }
             });
     }
-    bu.showStats = function(dataForRecords, statsDim, container) {
-        var w = 100, h = 20, chart, statsUL, data;
-        dataSet.statsDims = dataSet.statsDims || [];
-        if (dataSet.statsDims.indexOf(statsDim) === -1) {
-            dataSet.statsDims.push(statsDim);
-            chart = d3.select(container)
-                .append('svg')
-                    .attr('class', 'stats-hist')
-                    .attr('dim', statsDim)
-                    .attr('width',w)
-                    .attr('height',h);
-            statsUL = d3.select(container).append('ul')
-                        .attr('class','stats')
-                        .attr('dim', statsDim);
-            data = _.pluck(dataForRecords.data,statsDim);
-        } else {
-            chart = d3.selectAll('svg.stats-hist[dim="' + statsDim + '"]');
-            statsUL = d3.selectAll('ul.stats[dim="' + statsDim + '"]');
-            data = _.pluck(dataForRecords.records,statsDim);
-        }
-        var domain = d3.extent(data);
-        var spread = domain[1] - domain[0];
-        // algorithm from
-        // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
-        var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
-                            * Math.pow(data.length, -1/3);
-        bin_number = (bin_number < 11 && dataSet.dimGroups[statsDim].length < 20) 
-            ? dataSet.dimGroups[statsDim].length : bin_number;
-        var bins = d3.layout.histogram().frequency(true)
-                .bins(bin_number)(data),
-                //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
-            x = d3.scale.linear().domain(domain).range([0, w]),
-            max = d3.max(bins, function(d) { return d.length; }),
-            y = d3.scale.linear().domain([0, max]).range([0, h]);
-        /*
-        var kde = science.stats.kde().sample(data);
-        var bw = science.stats.bandwidth.nrd0(data);
-        kde.bandwidth(.00001);
-        var line = d3.svg.line()
-                    .x(function(d) { return x(d[0]); })
-                    .y(function(d) { return h - y(d[1]); });
-        */
-        chart.selectAll("g.bar").remove();
+    function drawBars(chart, bins, w, h, x, y, bin_number) {
+        chart.selectAll("g").remove();
         var bars = chart.selectAll("g.bar")
                         .data(bins, function(arr) { return arr[0] });
         bars.enter().append("g")
@@ -367,6 +326,95 @@ treelike.browserUI = (function() {
                 })
                 .attr("width", function(d) { return w / bin_number  })
                 .attr("height", function(d) { return y(d.y); });
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            //.tickValues(x.domain())
+            .ticks(4)
+            .orient("bottom");
+        chart.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + h + ")")
+            .call(xAxis);
+    }
+    bu.showStats = function(dataForRecords, statsDim, container) {
+        var w = 100, h = 20, chart, statsUL, data, statsDiv, binsIncr, binsDecr;
+        dataSet.statsDims = dataSet.statsDims || [];
+        if (dataSet.statsDims.indexOf(statsDim) === -1) {
+            dataSet.statsDims.push(statsDim);
+
+            statsDiv = d3.select(container)
+                        .append('div')
+                            .attr('class', 'stats')
+                            .attr('dim', statsDim);
+            statsDiv.append('span').attr('class','bin-number');
+            binsIncr = statsDiv.append('button')
+                        .attr('class','btn btn-mini pull-right')
+                        .on('click', function(d) { binChange(d, 'plus') })
+                        .append('i').attr('class', 'icon-plus-sign');
+            binsDecr = statsDiv.append('button')
+                        .attr('class','btn btn-mini pull-right')
+                        .on('click', function(d) { binChange(d, 'minus') })
+                        .append('i').attr('class', 'icon-minus-sign');
+            chart = statsDiv.append('svg')
+                    .attr('class', 'stats-hist')
+                    .attr('width',w + 30)
+                    .attr('height',h + 20)
+                    .append('g')
+                        .attr('transform', 'translate(15,0)');
+                    ;
+            statsUL = d3.select(container).append('ul')
+                        .attr('class','stats')
+                        .attr('dim', statsDim);
+            data = _.pluck(dataForRecords.data,statsDim);
+        } else {
+            statsDiv = d3.selectAll('div.stats[dim="' + statsDim + '"]');
+            chart = statsDiv.select('svg.stats-hist');
+            statsUL = statsDiv.select('ul.stats');
+            //binsIncr = statsDiv.select('span-bins-incr');
+            data = _.pluck(dataForRecords.records,statsDim);
+        }
+        var domain = d3.extent(data);
+        var spread = domain[1] - domain[0];
+        domain[0] = Math.round(domain[0] - spread / 10);
+        domain[1] = Math.round(domain[1] + spread / 10);
+        // algorithm from
+        // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
+        var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
+                            * Math.pow(data.length, -1/3);
+        bin_number = (bin_number < 11 && dataSet.dimGroups[statsDim].length < 20) 
+            ? dataSet.dimGroups[statsDim].length : bin_number;
+        bin_number = Math.round(bin_number);
+        var bins = d3.layout.histogram().frequency(true)
+                .bins(bin_number)(data),
+                //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
+            x = d3.scale.linear().domain(domain).range([0, w]),
+            max = d3.max(bins, function(d) { return d.length; }),
+            y = d3.scale.linear().domain([0, max]).range([0, h]);
+        statsDiv.select('span.bin-number')
+            .text(bin_number + ' bins ');
+
+        function binChange(d, direction) {
+            bin_number = bin_number + ((direction==='plus') ? 1 : -1);
+            var bins = d3.layout.histogram().frequency(true)
+                    .bins(bin_number)(data),
+                    //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
+                x = d3.scale.linear().domain(domain).range([0, w]),
+                max = d3.max(bins, function(d) { return d.length; }),
+                y = d3.scale.linear().domain([0, max]).range([0, h]);
+            statsDiv.select('span.bin-number')
+                .text(bin_number + ' bins ');
+            drawBars(chart, bins, w, h, x, y, bin_number);
+        };
+        /*
+        var kde = science.stats.kde().sample(data);
+        var bw = science.stats.bandwidth.nrd0(data);
+        kde.bandwidth(.00001);
+        var line = d3.svg.line()
+                    .x(function(d) { return x(d[0]); })
+                    .y(function(d) { return h - y(d[1]); });
+        */
+        drawBars(chart, bins, w, h, x, y, bin_number);
+
 
         /*
         chart.selectAll("path")
