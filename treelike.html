@@ -59,7 +59,7 @@
                     reader.readAsText(file);
                     reader.onload = function(event){
                         var csv = event.target.result;
-                        csv = csv.replace(/\r/g,'\n');  // does this fix a csv library bug?
+                        csv = csv.replace(/(\r|\n)+/g,'\n');  // does this fix a csv library bug?
                         var dataSet = gbo[file.basename];
                         //dataSet.raw = csv;  // too big, don't hold on to
                         dataSet.loaded = true;
