@@ -871,8 +871,12 @@ treelike.collapsibleTree = (function($, d3) {
                 .attr("y", "-.35em")
                 .attr('height', '.6em')
                 .attr('width', function(d) { 
-                    return 2 * dataSet.dimWidths[d.dim] * d.records.length / enlightenedData
-                        .aggregate(_(d.parentList).pluck('records'), 'length').max
+                    var nodesOfDim = d3.select(this.parentElement.parentElement)
+                        .selectAll('g.node[dim="' + d.dim + '"]');
+                    var items = _(nodesOfDim[0]).map(function(d) { return d.__data__ });
+                    var maxRecs = enlightenedData.aggregate(_(items).pluck('records'), 'length').max;
+                    return 2 * dataSet.dimWidths[d.dim] * d.records.length / maxRecs;
+                    //enlightenedData.aggregate(_(d.parentList).pluck('records'), 'length').max
                 })
                 .style('opacity', 0.10)
                 .attr('fill', 'blue')
