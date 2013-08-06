@@ -335,6 +335,7 @@ treelike.browserUI = (function() {
             .attr("class", "x axis")
             .attr("transform", "translate(0," + h + ")")
             .call(xAxis);
+        //chart.node().parentElement
     }
     bu.showStats = function(dataForRecords, statsDim, container) {
         var w = 100, h = 20, chart, statsUL, data, statsDiv, binsIncr, binsDecr;
@@ -362,7 +363,7 @@ treelike.browserUI = (function() {
                     .append('g')
                         .attr('transform', 'translate(15,0)');
                     ;
-            statsUL = d3.select(container).append('ul')
+            statsUL = statsDiv.append('ul')
                         .attr('class','stats')
                         .attr('dim', statsDim);
             data = _.pluck(dataForRecords.data,statsDim);
@@ -873,7 +874,7 @@ treelike.collapsibleTree = (function($, d3) {
                     return 2 * dataSet.dimWidths[d.dim] * d.records.length / enlightenedData
                         .aggregate(_(d.parentList).pluck('records'), 'length').max
                 })
-                .style('opacity', 0.35)
+                .style('opacity', 0.10)
                 .attr('fill', 'blue')
 
         // Transition nodes to their new position.
