@@ -194,6 +194,11 @@ treelike.browserUI = (function() {
             .style('font-size', '70%')
             .style('font-weight', 'normal')
             .text(' ' + vals.length + ' val' + (vals.length === 1 ? '' : 's') + ' ');
+        li.append('div').attr('class','selected-bar')
+            .style('height', '6px')
+            .style('width', '100%')
+            .style('background', 'blue')
+            .style('opacity',.5);
         li.append('div').attr('class','buttons');
         var vals = dataSet.dimGroups[datum];
         var chart = li.append('div');
@@ -834,10 +839,14 @@ treelike.collapsibleTree = (function($, d3) {
             })
             .on("click", function(d) { 
                 toggle(d); ct.update(d); })
-            .on("mouseover", function(d) { 
-                //console_log(d + 'highlight ');
-                treelike.browserUI.updateStats(d);
-                highlightRelated(this, d, true);
+            .on("mouseover", function(highlight_d) { 
+                treelike.browserUI.updateStats(highlight_d);
+                highlightRelated(this, highlight_d, true);
+                d3.selectAll('div.selected-bar').style('width', function(dim_d) { 
+                    var dim_vals = dataSet.dimGroups[dim_d].length;
+                    var dim_vals_highlighted = _.chain(highlight_d.records).pluck(dim_d).uniq().value().length;
+                    return (100 * dim_vals_highlighted / dim_vals) + '%';
+                })
                 //legendReport(this, d); // BARHIGHLIGHT
             })
             .on("mouseout", function(d) { 
