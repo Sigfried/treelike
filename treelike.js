@@ -342,6 +342,7 @@ treelike.browserUI = (function() {
             .call(xAxis);
         //chart.node().parentElement
     }
+    var bin_numbers = {}
     bu.showStats = function(dataForRecords, statsDim, container) {
         var w = 100, h = 20, chart, statsUL, data, statsDiv, binsIncr, binsDecr;
         dataSet.statsDims = dataSet.statsDims || [];
@@ -385,13 +386,15 @@ treelike.browserUI = (function() {
         domain[1] = Math.round(domain[1] + spread / 10);
         // algorithm from
         // http://stackoverflow.com/questions/6876358/how-to-keep-a-dynamical-histogram/6883617#6883617
+        /*          not working -- disabling for now
         var bin_number = 3.5 * Math.sqrt(Math.sqrt(science.stats.variance(data)))
                             * Math.pow(data.length, -1/3);
         bin_number = (bin_number < 11 && dataSet.dimGroups[statsDim].length < 20) 
             ? dataSet.dimGroups[statsDim].length : bin_number;
         bin_number = Math.round(bin_number);
+        */
 
-        bin_number = 8;
+        var bin_number = bin_numbers[statsDim] = bin_numbers[statsDim] || 8
 
 
 
@@ -405,7 +408,7 @@ treelike.browserUI = (function() {
             .text(bin_number + ' bins ');
 
         function binChange(d, direction) {
-            bin_number = bin_number + ((direction==='plus') ? 1 : -1);
+            bin_number = bin_numbers[d.toString()] = bin_numbers[d.toString()] + ((direction==='plus') ? 1 : -1);
             var bins = d3.layout.histogram().frequency(true)
                     .bins(bin_number)(data),
                     //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
