@@ -390,6 +390,11 @@ treelike.browserUI = (function() {
         bin_number = (bin_number < 11 && dataSet.dimGroups[statsDim].length < 20) 
             ? dataSet.dimGroups[statsDim].length : bin_number;
         bin_number = Math.round(bin_number);
+
+        bin_number = 8;
+
+
+
         var bins = d3.layout.histogram().frequency(true)
                 .bins(bin_number)(data),
                 //.bins(d3.range(domain[0], domain[1], spread / 8))(data),
