@@ -36,8 +36,8 @@ treelike.DataSet.prototype.dataPrep = function(data) {
         return [d, enlightenedData.group(that.data, d)];
     }).object().value();
     this.defaultWidths = _.chain(this.allDims).map(function(dim) {
-        return [dim, Math.max(25,enlightenedData.aggregate(
-                _(that.dimGroups[dim]).pluck('length')).avg * 15)]
+        return [dim, Math.max(25,(enlightenedData.aggregate(
+                that.dimGroups[dim].pluck('length').compact()).avg || 10)* 15)]
     }).object().value();
     this.defaultWidths.Root = 80;
     this.dimWidths = _.clone(this.defaultWidths);
