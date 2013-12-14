@@ -807,7 +807,7 @@ treelike.collapsibleTree = (function($, d3) {
         //root.children.forEach(toggleAll);
     };
     ct.update = function(source, drawFromScratch) {
-        if (!tree) {
+        if (!tree || !tree.root) {
             ct.recalc(source);
         }
         source = source || ct.root;

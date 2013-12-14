@@ -174,7 +174,7 @@ var enlightenedData = (function() {
 
     Groups.prototype.asRootVal = function(name) {
         name = name || 'Root';
-        var val = new Value(name);
+        var val = makeValue(name);
         val.records = e.addGroupMethods(this);
         val.dim = 'root';
         return val;
@@ -373,7 +373,7 @@ var enlightenedData = (function() {
         var list = _(comp).values().sort(function(a,b) {
             return (a.fromIdx - b.fromIdx) || (a.toIdx - b.toIdx);
         }).map(function(d) {
-            var val = new Value(d.name);
+            var val = makeValue(d.name);
             _.extend(val, d);
             val.records = []
             if ('from' in d)
@@ -393,7 +393,7 @@ var enlightenedData = (function() {
             throw new Error("not sure what you're trying to do");
         }
         var name = from + ' to ' + to;
-        var val = new Value(name);
+        var val = makeValue(name);
         val.from = from;
         val.to = to;
         val.depth = 0;
@@ -401,7 +401,8 @@ var enlightenedData = (function() {
         val.records = [].concat(from.records,to.records);
         val.records.parentVal = val; // NOT TESTED, NOT USED, PROBABLY WRONG
         val.dim = from.dim;
-        return Value(val);
+        return val;
+        //return Value(val);
     };
     _.extend(StringValue.prototype, Value.prototype);
     _.extend(NumberValue.prototype, Value.prototype);
