@@ -1,16 +1,3 @@
----
-layout: page
-title: "index"
-title: "TreeLike Browser"
-date: 2013-12-24 14:41
-comments: true
-sharing: true
-footer: true
-project: true
-reponame: treelike
-cover: treelike_screenshot.png
----
-
 ### Explore CSV or JSON files from SQL queries or spreadsheets
 
 TreeLike is an experimental tool providing a quick way to understand the
