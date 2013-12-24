@@ -1,9 +1,7 @@
 ### Explore CSV or JSON files from SQL queries or spreadsheets
 
 TreeLike is an experimental tool providing a quick way to understand the
-shape of the data in a CSV file.[^1]
-
-[^1]: Or a spreadsheet or SQL query or SAS data set, or any other data arranged in rows and columns and saved as CSV or JSON. 
+shape of multi-dimensional data in a tabular CSV or JSON file.
 
 [Demo](../treelike/demo.html) (you'll need a data file, how about: [MySQL world data](https://raw.github.com/Sigfried/treelike/master/data/mysql_world_data.csv))
 
