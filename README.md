@@ -14,11 +14,6 @@ many-to-many relationship, the merge feature shows connections in both
 directions, not just from parent to child. And parent/child
 relationships can be reordered with one or two mouse clicks.
 
-To understand what it does, you need to see it in action. This rough
-demo video will explain:
-
-<iframe width="420" height="315" src="//www.youtube.com/embed/mJ8ljG8qpZk" frameborder="0" allowfullscreen></iframe>
-
 TreeLike will be most helpful with files of between about 4 and
 20 columns. It should be fine with at least tens of thousands of rows,
 but it hasn't been well tested.
