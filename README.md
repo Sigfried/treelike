@@ -3,7 +3,7 @@
 TreeLike is an experimental tool providing a quick way to understand the
 shape of multi-dimensional data in a tabular CSV or JSON file.
 
-[Demo](https://raw.github.com/Sigfried/treelike/master/demo.html) (you'll need a data file, how about: [MySQL world data](https://raw.github.com/Sigfried/treelike/master/data/mysql_world_data.csv))
+[Demo](https://rawgit.com/Sigfried/treelike/master/demo.html) (you'll need a data file, how about: [MySQL world data](https://raw.github.com/Sigfried/treelike/master/data/mysql_world_data.csv))
 
 It immediately shows the distributions of values in all columns, and by
 laying out the columns in some nesting order, can show hierarchical
